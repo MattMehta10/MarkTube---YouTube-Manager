@@ -18,6 +18,7 @@ import { MTContext } from './Wrapper.jsx';
 
 import Stats from './components/Stats';
 import VideoCont from './components/VideoCont';
+import Library from './components/Library';
 
 function DashboardHome() {
   return (
@@ -35,7 +36,7 @@ export default function App() {
         <Routes>
           <Route element={<MainLayout />}>
             <Route path="/" element={<DashboardHome />} />
-            <Route path="/library" element={<div className="p-4 text-slate-300">Library view...</div>} />
+            <Route path="/library" element={<Library />} />
             <Route path="/setting" element={<div className="p-4 text-slate-300">Settings view...</div>} />
             <Route path="/login" element={<div className="p-4 text-slate-300">Login view...</div>} />
           </Route>
