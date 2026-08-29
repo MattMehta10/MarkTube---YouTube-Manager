@@ -1,16 +1,52 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: 'typold';
+  src: url('/The%20Northern%20Block%20Ltd%20-%20Typold%20Bold.otf') format('opentype');
+}
+
+@font-face {
+  font-family: 'Unisansheavy';
+  src: url('/Unisansheavy.otf') format('opentype');
+}
+
+#greeting {
+  font-family: 'typold', system-ui, sans-serif;
+}
+
 html, body {
   margin: 0;
   padding: 0;
+  width: 500px;
+  height: 100vh;
   background: #030712 !important;
   color: #ffffff !important;
   font-family: system-ui, -apple-system, sans-serif;
+  overflow: hidden;
 }
 
 #mt-sidebar-root {
+  width: 500px;
+  height: 100vh;
   background: #030712 !important;
-  min-height: 100vh;
   color: #ffffff !important;
+  overflow: hidden;
 }
 
+.myScrollArea {
+  overflow-y: scroll;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(113, 108, 108, 0.4) transparent;
+}
+
+.myScrollArea::-webkit-scrollbar {
+  width: 6px;
+}
+
+.myScrollArea::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.myScrollArea:hover::-webkit-scrollbar-thumb {
+  background: rgba(113, 108, 108, 0.4);
+}

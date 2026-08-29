@@ -16,13 +16,13 @@ export function injectSidebar() {
     border: 'none',
     margin: '0',
     padding: '0',
-    backgroundColor: '#0b0f14',
+    backgroundColor: '#030712',
     boxShadow: '4px 0 25px rgba(0, 0, 0, 0.5)',
   });
   document.body.appendChild(host);
 
   const iframe = document.createElement('iframe');
-  iframe.style.cssText = 'width:100%; height:100%; border:none; margin:0; padding:0; background:#0b0f14;';
+  iframe.style.cssText = 'width:100%; height:100%; border:none; margin:0; padding:0; background:#030712; display:block;';
   host.appendChild(iframe);
 
   const handle = document.createElement('div');
@@ -33,7 +33,7 @@ export function injectSidebar() {
     transform: 'translateY(-50%)',
     width: '24px',
     height: '60px',
-    backgroundColor: '#0b0f14',
+    backgroundColor: '#030712',
     color: '#94a3b8',
     cursor: 'pointer',
     borderRadius: '0 8px 8px 0',
@@ -41,7 +41,7 @@ export function injectSidebar() {
     alignItems: 'center',
     justifyContent: 'center',
     fontSize: '14px',
-    border: '1px solid #1e293b',
+    border: '1px solid #374151',
     borderLeft: 'none',
     boxShadow: '4px 0 10px rgba(0, 0, 0, 0.3)',
     zIndex: '1000000',
@@ -57,24 +57,31 @@ export function injectSidebar() {
   const doc = iframe.contentDocument;
   doc.open();
   doc.write(`
+    <!DOCTYPE html>
     <html lang="en">
       <head>
+        <meta charset="UTF-8" />
         <link rel="stylesheet" href="${cssURL}" />
         <style>
+          *, *::before, *::after {
+            box-sizing: border-box;
+          }
           html, body {
             margin: 0;
             padding: 0;
-            width: 100%;
+            width: 500px;
             height: 100vh;
-            background: #0b0f14 !important;
-            color: #f8fafc !important;
+            background-color: #030712 !important;
+            color: #ffffff !important;
             font-family: system-ui, -apple-system, sans-serif;
-            overflow-y: auto;
+            overflow: hidden !important;
           }
           #mt-sidebar-root {
-            width: 100%;
-            min-height: 100vh;
-            background: #0b0f14 !important;
+            width: 500px;
+            height: 100vh;
+            background-color: #030712 !important;
+            color: #ffffff !important;
+            overflow: hidden;
           }
         </style>
       </head>

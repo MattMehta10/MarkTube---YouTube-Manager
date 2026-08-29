@@ -1,196 +1,177 @@
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import { IoIosArrowForward } from 'react-icons/io';
 import { db } from '../utils/pouch';
 import { Link } from 'react-router-dom';
-import { toast } from 'react-toastify';
-import { getExtURL } from '../utils/asset';
-import { MTContext } from '../Wrapper';
 
 const Settings = () => {
   const [openSection, setOpenSection] = useState(null);
-  const context = useContext(MTContext) || {};
-  const { fetchStats, theme, settheme } = context;
 
   const handleToggle = (section) => {
     setOpenSection(openSection === section ? null : section);
   };
 
-  const exportData = async () => {
-    try {
-      const finalData = {
-        watched: [],
-        important: [],
-        toWatch: [],
-        exportedAt: new Date().toISOString(),
-      };
+  async function exportData() {
+    let finalData = {
+      watched: [],
+      important: [],
+      toWatch: [],
+    };
 
-      const allDocs = await db.allDocs({ include_docs: true });
+    const allDocs = await db.allDocs({ include_docs: true });
 
-      allDocs.rows.forEach((row) => {
-        const doc = row.doc;
-        if (!doc || doc._id?.startsWith('_design/')) return;
-        if (doc.type === 'watched') finalData.watched.push(doc);
-        else if (doc.type === 'important') finalData.important.push(doc);
-        else if (doc.type === 'toWatch') finalData.toWatch.push(doc);
-      });
+    allDocs.rows.forEach((row) => {
+      const doc = row.doc;
+      if (doc.type === 'watched') finalData.watched.push(doc);
+      else if (doc.type === 'important') finalData.important.push(doc);
+      else if (doc.type === 'toWatch') finalData.toWatch.push(doc);
+    });
 
-      const blob = new Blob([JSON.stringify(finalData, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `marktube_backup_${Date.now()}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
-
-      toast.success('📥 MarkTube backup downloaded successfully');
-    } catch (err) {
-      toast.error('❌ Failed to export data');
-      console.error('[MarkTube] Export error:', err);
-    }
-  };
-
-  const handleClearDatabase = async () => {
-    if (window.confirm('⚠️ Are you sure you want to clear all saved videos? This cannot be undone.')) {
-      try {
-        const allDocs = await db.allDocs({ include_docs: true });
-        const deleteOps = allDocs.rows
-          .map((r) => r.doc)
-          .filter((d) => d && d._id && !d._id.startsWith('_design/'))
-          .map((d) => ({ ...d, _deleted: true }));
-
-        await db.bulkDocs(deleteOps);
-        if (fetchStats) fetchStats();
-        toast.success('🗑️ Database cleared successfully');
-      } catch (err) {
-        toast.error('❌ Failed to clear database');
-      }
-    }
-  };
+    const blob = new Blob([JSON.stringify(finalData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `marktube_backup_${Date.now()}.json`;
+    a.click();
+  }
 
   return (
-    <div className="p-4 flex flex-col gap-3.5 items-center w-full">
-      {/* Profile Header */}
-      <div className="bg-slate-900/80 border border-slate-800 w-full p-4 flex items-center justify-between rounded-2xl shadow-sm">
-        <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-emerald-400 font-bold text-base">
-            YM
-          </div>
+    <div className="p-6 flex flex-col gap-3 items-center">
+      <div id="profile" className="bg-emerald-700/50 w-full h-25 flex items-center justify-between px-8 rounded-2xl">
+        <div className="flex gap-4 items-center">
+          <img
+            className="bg-white rounded-full h-18 w-18 object-cover"
+            src="https://res.cloudinary.com/ymatt/image/upload/v1763563264/Designer_uptxpr.jpg"
+            alt="User Avatar"
+          />
           <div>
-            <div className="font-semibold text-slate-100 text-sm">Yash Mehta</div>
-            <div className="text-slate-400 text-xs">user@marktube.local</div>
+            <div className="font-semibold text-lg mt-1">Yash Mehta</div>
+            <div className="text-gray-400 text-sm mb-2">user@email.com</div>
           </div>
         </div>
         <Link to="/login">
-          <button className="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs px-3 py-1.5 rounded-lg border border-slate-700 transition">
-            Account
+          <button className="bg-white text-black px-4 py-2 rounded-lg font-medium shadow hover:bg-emerald-100/90 transition cursor-pointer">
+            Login
           </button>
         </Link>
       </div>
 
       {/* Data Control */}
-      <div className="w-full bg-slate-900/60 border border-slate-800 rounded-2xl overflow-hidden transition-all">
+      <div
+        className={`${
+          openSection === 'DC' ? 'h-45 items-start' : 'h-15'
+        } transition-all duration-300 datacontrol relative border-2 border-gray-500/30 w-112 overflow-hidden whitespace-pre-wrap aspect-video flex gap-5 py-5 rounded-2xl`}
+      >
         <div
           onClick={() => handleToggle('DC')}
-          className="flex justify-between items-center p-4 cursor-pointer hover:bg-slate-800/50 transition"
+          className="flex h-15 absolute top-0 left-0 justify-between w-112 p-5 items-center hover:bg-gray-400/10 rounded-t-2xl cursor-pointer"
         >
-          <span className="text-sm font-medium text-slate-200">💾 Data Control & Backup</span>
+          <h1>Data Control</h1>
           <IoIosArrowForward
-            className={`text-slate-400 text-base transition-transform duration-300 ${
-              openSection === 'DC' ? 'rotate-90' : ''
-            }`}
+            className={`${openSection === 'DC' ? 'rotate-90' : ''} transition-transform duration-300 origin-center`}
           />
         </div>
         {openSection === 'DC' && (
-          <div className="p-4 pt-0 border-t border-slate-800/60 flex flex-col gap-3 text-xs">
-            <div className="flex justify-between items-center py-2">
-              <span className="text-slate-300">Export Library (JSON)</span>
-              <button
-                onClick={exportData}
-                className="px-3 py-1.5 bg-emerald-600/20 text-emerald-400 border border-emerald-500/40 rounded-lg hover:bg-emerald-600/30 transition font-medium"
-              >
-                Download Backup
+          <div className="pt-10">
+            <div className="flex h-15 p-5 justify-between w-112 items-center hover:bg-gray-400/10 rounded-2xl">
+              <h1>Download Data</h1>
+              <button onClick={exportData} className="px-3 py-1 cursor-pointer border active:scale-95 rounded-lg">
+                Download
               </button>
             </div>
-            <div className="flex justify-between items-center py-2">
-              <span className="text-slate-300">Reset Local Database</span>
-              <button
-                onClick={handleClearDatabase}
-                className="px-3 py-1.5 bg-red-600/20 text-red-400 border border-red-500/40 rounded-lg hover:bg-red-600/30 transition font-medium"
-              >
-                Clear Data
+            <div className="flex h-15 p-5 justify-between w-112 items-center hover:bg-gray-400/10 rounded-2xl">
+              <span>Delete Account</span>
+              <button className="bg-red-500 text-white px-3 py-1 rounded-lg cursor-pointer hover:bg-red-600 transition">
+                Delete
               </button>
             </div>
           </div>
         )}
       </div>
 
-      {/* Look & Preferences */}
-      <div className="w-full bg-slate-900/60 border border-slate-800 rounded-2xl overflow-hidden transition-all">
+      {/* Look Control */}
+      <div
+        className={`${
+          openSection === 'Look' ? 'h-45 items-start' : 'h-15'
+        } transition-all duration-300 datacontrol relative border-2 border-gray-500/30 overflow-hidden w-112 whitespace-pre-wrap aspect-video flex gap-5 p-5 rounded-2xl`}
+      >
         <div
           onClick={() => handleToggle('Look')}
-          className="flex justify-between items-center p-4 cursor-pointer hover:bg-slate-800/50 transition"
+          className="flex h-15 absolute top-0 left-0 justify-between w-112 p-5 items-center hover:bg-gray-400/10 rounded-t-2xl cursor-pointer"
         >
-          <span className="text-sm font-medium text-slate-200">🎨 Appearance & Theme</span>
+          <h1>Look Control</h1>
           <IoIosArrowForward
-            className={`text-slate-400 text-base transition-transform duration-300 ${
-              openSection === 'Look' ? 'rotate-90' : ''
-            }`}
+            className={`${openSection === 'Look' ? 'rotate-90' : ''} transition-transform duration-300 origin-center`}
           />
         </div>
         {openSection === 'Look' && (
-          <div className="p-4 pt-0 border-t border-slate-800/60 flex flex-col gap-3 text-xs">
-            <div className="flex justify-between items-center py-2">
-              <span className="text-slate-300">Theme Preference</span>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => settheme && settheme(true)}
-                  className={`px-3 py-1 rounded-lg border text-xs transition ${
-                    theme
-                      ? 'bg-slate-700 text-white border-slate-500'
-                      : 'bg-slate-800 text-slate-400 border-slate-700'
-                  }`}
-                >
-                  Dark Mode
-                </button>
-                <button
-                  onClick={() => settheme && settheme(false)}
-                  className={`px-3 py-1 rounded-lg border text-xs transition ${
-                    !theme
-                      ? 'bg-slate-700 text-white border-slate-500'
-                      : 'bg-slate-800 text-slate-400 border-slate-700'
-                  }`}
-                >
-                  Light Mode
-                </button>
+          <div className="pt-10">
+            <div className="flex flex-col gap-3">
+              <div className="flex justify-between items-center">
+                <span>Sidebar Width</span>
+                <input type="range" min="200" max="500" className="w-32" />
+              </div>
+              <div className="flex justify-between items-center">
+                <span>Font Size</span>
+                <input type="range" min="12" max="24" className="w-32" />
               </div>
             </div>
           </div>
         )}
       </div>
 
-      {/* Notification Preferences */}
-      <div className="w-full bg-slate-900/60 border border-slate-800 rounded-2xl overflow-hidden transition-all">
+      {/* Theme Control */}
+      <div
+        className={`${
+          openSection === 'Theme' ? 'h-45 items-start' : 'h-15'
+        } transition-all duration-300 datacontrol relative border-2 border-gray-500/30 overflow-hidden w-112 whitespace-pre-wrap aspect-video flex gap-5 p-5 rounded-2xl`}
+      >
+        <div
+          onClick={() => handleToggle('Theme')}
+          className="flex h-15 absolute top-0 left-0 justify-between w-112 p-5 items-center hover:bg-gray-400/10 rounded-t-2xl cursor-pointer"
+        >
+          <h1>Theme Control</h1>
+          <IoIosArrowForward
+            className={`${openSection === 'Theme' ? 'rotate-90' : ''} transition-transform duration-300 origin-center`}
+          />
+        </div>
+        {openSection === 'Theme' && (
+          <div className="pt-10">
+            <div className="flex gap-5">
+              <button className="bg-gray-800 text-white p-2 rounded-2xl cursor-pointer">Dark</button>
+              <button className="bg-white text-black p-2 rounded-2xl border cursor-pointer">Light</button>
+              <button className="bg-blue-200 text-blue-900 p-2 rounded-2xl cursor-pointer">System</button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Notification Control */}
+      <div
+        className={`${
+          openSection === 'Notif' ? 'h-45 items-start' : 'h-15'
+        } transition-all duration-300 datacontrol relative border-2 border-gray-500/30 overflow-hidden w-112 whitespace-pre-wrap aspect-video flex gap-5 p-5 rounded-2xl`}
+      >
         <div
           onClick={() => handleToggle('Notif')}
-          className="flex justify-between items-center p-4 cursor-pointer hover:bg-slate-800/50 transition"
+          className="flex h-15 absolute top-0 left-0 justify-between w-112 p-5 items-center hover:bg-gray-400/10 rounded-t-2xl cursor-pointer"
         >
-          <span className="text-sm font-medium text-slate-200">🔔 Notifications & Sync</span>
+          <h1>Notification Control</h1>
           <IoIosArrowForward
-            className={`text-slate-400 text-base transition-transform duration-300 ${
-              openSection === 'Notif' ? 'rotate-90' : ''
-            }`}
+            className={`${openSection === 'Notif' ? 'rotate-90' : ''} transition-transform duration-300 origin-center`}
           />
         </div>
         {openSection === 'Notif' && (
-          <div className="p-4 pt-0 border-t border-slate-800/60 flex flex-col gap-2.5 text-xs text-slate-300">
-            <label className="flex items-center justify-between py-1 cursor-pointer">
-              <span>Show Toast Alerts on DB updates</span>
-              <input type="checkbox" defaultChecked className="accent-emerald-500 rounded" />
-            </label>
-            <label className="flex items-center justify-between py-1 cursor-pointer">
-              <span>Live YouTube SPA Sync</span>
-              <input type="checkbox" defaultChecked className="accent-emerald-500 rounded" />
-            </label>
+          <div className="pt-10">
+            <div className="flex flex-col gap-3">
+              <div className="flex justify-between items-center">
+                <span>Email Alerts</span>
+                <input type="checkbox" />
+              </div>
+              <div className="flex justify-between items-center">
+                <span>Push Notifications</span>
+                <input type="checkbox" />
+              </div>
+            </div>
           </div>
         )}
       </div>

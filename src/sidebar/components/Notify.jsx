@@ -20,8 +20,7 @@ const Notification = () => {
     {
       id: 2,
       title: 'Welcome to MarkTube 🎉',
-      detail:
-        "We're thrilled to have you onboard! MarkTube is your personal YouTube manager — helping you stay organized, focused, and productive.",
+      detail: `We're thrilled to have you onboard! MarkTube is your personal YouTube manager — helping you stay organized, focused, and productive.`,
       features: [
         {
           label: '🎯 Mark Videos',
@@ -45,64 +44,68 @@ const Notification = () => {
     },
   ];
 
-  if (!Notifshow) return null;
-
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex justify-center items-start pt-14 px-4" onClick={() => setNotifshow(false)}>
-      <div
-        className="myScrollArea w-full max-w-sm bg-slate-900 text-white rounded-xl shadow-2xl border border-slate-700 overflow-y-auto max-h-[70vh] relative"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <button
-          className="absolute top-3.5 right-3 text-slate-400 hover:text-red-400 transition"
-          onClick={() => setNotifshow(false)}
-        >
-          <IoClose size={22} />
-        </button>
-
-        <div className="p-4 font-semibold border-b border-slate-800 text-slate-200 text-base">
-          Notifications
-        </div>
-
-        <div className="p-4 space-y-4">
-          {dummyNotifications.map((note) => (
-            <div
-              key={note.id}
-              className={`rounded-xl p-3.5 ${
-                note.type === 'important'
-                  ? 'bg-emerald-950/60 border border-emerald-800/70'
-                  : 'bg-slate-800/80 border border-slate-700/60'
-              }`}
+    <>
+      {Notifshow && (
+        <div onClick={() => setNotifshow && setNotifshow(false)}>
+          <div
+            className="myScrollArea w-3/4 bg-[#111827] top-12 left-18 text-white rounded-lg shadow-2xl border fixed z-[555] border-zinc-700 overflow-y-auto max-h-[60vh]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close Button */}
+            <button
+              className="absolute top-4 right-1.5 text-zinc-400 hover:text-red-400 cursor-pointer"
+              onClick={() => setNotifshow && setNotifshow(false)}
             >
-              <div className="flex justify-between items-start mb-2">
-                <h3 className="text-base font-bold text-slate-100">{note.title}</h3>
-                <span className="text-xs text-slate-400 whitespace-nowrap ml-2">{note.date}</span>
-              </div>
+              <IoClose size={24} />
+            </button>
 
-              <p className="text-xs text-slate-300 leading-relaxed">{note.detail}</p>
-
-              {note.features && (
-                <ul className="mt-2.5 space-y-1 text-xs text-slate-400">
-                  {note.features.map((f, i) => (
-                    <li key={i}>
-                      <strong className="text-slate-200">{f.label}</strong> - {f.desc}
-                    </li>
-                  ))}
-                </ul>
-              )}
-
-              {note.action && (
-                <div className="mt-3">
-                  <button className="text-emerald-400 hover:underline text-xs font-semibold">
-                    {note.action}
-                  </button>
-                </div>
-              )}
+            <div className="p-4 pb-3 text-lg font-semibold border-b border-zinc-700">
+              Notifications
             </div>
-          ))}
+
+            <div className="p-5 space-y-6">
+              {dummyNotifications.map((note) => (
+                <div
+                  key={note.id}
+                  className={`rounded-xl p-2 ${
+                    note.type === 'important'
+                      ? 'bg-emerald-950 border border-emerald-700'
+                      : 'bg-zinc-800'
+                  }`}
+                >
+                  <div className="flex p-2 justify-between">
+                    <h3 className="text-[25px] w-55 font-bold">{note.title}</h3>
+                    <span className="text-[14px] w-20 mt-3 text-right text-zinc-400">{note.date}</span>
+                  </div>
+
+                  <div className="p-3">
+                    <p className="text-sm text-zinc-300 leading-relaxed">{note.detail}</p>
+
+                    {note.features && (
+                      <ul className="list-disc list-inside mt-3 text-sm text-zinc-400 space-y-1">
+                        {note.features.map((f, i) => (
+                          <li key={i}>
+                            <strong className="text-white">{f.label}</strong> - {f.desc}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                  {note.action && (
+                    <div className="mt-3">
+                      <button className="text-emerald-400 hover:underline text-sm font-medium cursor-pointer">
+                        {note.action}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
+      )}
+    </>
   );
 };
 

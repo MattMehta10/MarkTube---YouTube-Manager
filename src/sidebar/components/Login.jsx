@@ -1,78 +1,127 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { FcGoogle } from 'react-icons/fc';
-import { toast } from 'react-toastify';
 
 const Login = () => {
+  const [isMatched, setisMatched] = useState(true);
+  const [isUEmpty, setisUEmpty] = useState(false);
+  const [isPEmpty, setisPEmpty] = useState(false);
+  const [isEEmpty, setisEEmpty] = useState(false);
+  const [weakPassword, setWeakPassword] = useState(false);
+
   const { register, handleSubmit, reset } = useForm();
 
-  const onSubmit = (data) => {
-    toast.info(`Account saved (local demo): ${data.username || data.email}`);
+  const isWeakPassword = (password) => {
+    if (password.length < 6) return true;
+    const isAlpha = /^[a-zA-Z]+$/.test(password);
+    const isNumeric = /^[0-9]+$/.test(password);
+    return isAlpha || isNumeric;
+  };
+
+  const submitHandler = (userdata) => {
+    const username = (userdata.username || '').trim();
+    const password = (userdata.password || '').trim();
+    const repassword = (userdata.repassword || '').trim();
+    const email = (userdata.email || '').trim();
+
+    const isUsernameEmpty = username === '';
+    const isPasswordEmpty = password === '';
+    const isEmailEmpty = email === '';
+    const isPasswordMatch = password === repassword;
+
+    setisUEmpty(isUsernameEmpty);
+    setisPEmpty(isPasswordEmpty);
+    setisEEmpty(isEmailEmpty);
+
+    if (isUsernameEmpty || isPasswordEmpty || isEmailEmpty) {
+      setisMatched(true);
+      return;
+    }
+
+    const weak = isWeakPassword(password);
+    setWeakPassword(weak);
+
+    if (!isPasswordMatch) {
+      setisMatched(false);
+      return;
+    }
+
+    if (weak) return;
+
     reset();
+    setWeakPassword(false);
+    setisMatched(true);
   };
 
   const handleGoogleLogin = () => {
-    toast.info('Google Auth is stubbed for local extension scope (Phase 3)');
+    alert('Google login (frontend-only placeholder)');
   };
 
   return (
-    <div className="p-4 flex flex-col items-center justify-center w-full">
-      <div className="w-full max-w-sm bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-xl text-slate-100">
-        <h2 className="text-lg font-bold text-center mb-1 text-slate-100">Sign In to MarkTube</h2>
-        <p className="text-xs text-slate-400 text-center mb-5">
-          Local profile & sync preferences
-        </p>
-
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 text-xs">
+    <div className="px-6 py-4">
+      <div className="w-full max-w-md text-white shadow-xl rounded-2xl px-6 space-y-6">
+        <h2 className="text-2xl font-bold text-center text-white">Sign In to MarkTube</h2>
+        <form onSubmit={handleSubmit(submitHandler)} className="space-y-4">
           <div>
-            <label className="block text-slate-300 font-medium mb-1">Username</label>
+            <label className="block text-sm font-medium">Username</label>
             <input
               {...register('username')}
+              className="mt-1 w-full px-4 py-2 bg-zinc-800 text-white border border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400"
               type="text"
               placeholder="Enter your username"
-              className="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 ring-emerald-500"
             />
+            {isUEmpty && <p className="text-sm text-red-400">Username cannot be empty</p>}
           </div>
 
           <div>
-            <label className="block text-slate-300 font-medium mb-1">Email</label>
+            <label className="block text-sm font-medium">Email</label>
             <input
               {...register('email')}
+              className="mt-1 w-full px-4 py-2 bg-zinc-800 text-white border border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400"
               type="email"
               placeholder="you@example.com"
-              className="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 ring-emerald-500"
             />
+            {isEEmpty && <p className="text-sm text-red-400">Email cannot be empty</p>}
           </div>
 
           <div>
-            <label className="block text-slate-300 font-medium mb-1">Password</label>
+            <label className="block text-sm font-medium">Password</label>
             <input
               {...register('password')}
+              className="mt-1 w-full px-4 py-2 bg-zinc-800 text-white border border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400"
               type="password"
-              placeholder="••••••••"
-              className="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 ring-emerald-500"
+              placeholder="Password"
             />
+            {isPEmpty && <p className="text-sm text-red-400">Password cannot be empty</p>}
+            {weakPassword && <p className="text-sm text-yellow-400">⚠️ Weak password (use mix of letters & numbers)</p>}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium">Confirm Password</label>
+            <input
+              {...register('repassword')}
+              className="mt-1 w-full px-4 py-2 bg-zinc-800 text-white border border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400"
+              type="password"
+              placeholder="Confirm your password"
+            />
+            {!isMatched && <p className="text-sm text-red-400">Passwords do not match</p>}
           </div>
 
           <button
             type="submit"
-            className="w-full mt-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2 rounded-lg transition"
+            className="w-full bg-green-500 cursor-pointer hover:bg-green-600 text-white font-semibold py-2 rounded-md transition duration-300"
           >
-            Save Account
+            Register
           </button>
         </form>
 
-        <div className="my-4 flex items-center justify-center text-xs text-slate-500">
-          <span className="h-px bg-slate-800 flex-1"></span>
-          <span className="px-2">OR</span>
-          <span className="h-px bg-slate-800 flex-1"></span>
-        </div>
+        <div className="flex items-center justify-center text-zinc-400">— OR —</div>
 
         <button
           onClick={handleGoogleLogin}
-          className="w-full flex items-center justify-center gap-2 border border-slate-700 py-2 rounded-lg bg-slate-800/60 hover:bg-slate-800 text-xs text-slate-200 transition"
+          className="w-full flex items-center cursor-pointer justify-center border border-zinc-600 py-2 rounded-md hover:bg-zinc-800 transition"
         >
-          <FcGoogle className="text-base" />
+          <FcGoogle className="text-xl mr-2" />
           Continue with Google
         </button>
       </div>
