@@ -16,6 +16,7 @@ import Wrapper from './Wrapper.jsx';
 import { useContext } from 'react';
 import { MTContext } from './Wrapper.jsx';
 
+import MainLayout from './MainLayout';
 import Stats from './components/Stats';
 import VideoCont from './components/VideoCont';
 import Library from './components/Library';
