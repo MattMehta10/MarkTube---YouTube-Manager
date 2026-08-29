@@ -12,6 +12,7 @@
     "dev": "npm run build && concurrently \"vite build --config vite.config.content.js --watch\" \"vite build --config vite.config.sidebar.js --watch\""
   },
   "dependencies": {
+    "events": "^3.3.0",
     "lottie-react": "^2.4.0",
     "nanoid": "^5.0.7",
     "pouchdb": "^8.0.1",
