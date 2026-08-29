@@ -30,15 +30,58 @@ function extractVideoId(href) {
   return ampersandPos >= 0 ? id.slice(0, ampersandPos) : id;
 }
 
-function extractMeta(cardEl, videoId) {
-  const thumbnailAnchor = cardEl.querySelector('a#thumbnail, a[href*="/watch"]');
-  const titleEl = cardEl.querySelector('#video-title') || cardEl.querySelector('yt-formatted-string#video-title');
-  const channelEl = cardEl.querySelector('ytd-channel-name a') || cardEl.querySelector('#channel-name');
-  const imgEl = thumbnailAnchor?.querySelector('img');
+async function extractMeta(cardEl, videoId) {
+  const fallbackThumb = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
 
-  const title = titleEl?.textContent.trim() || 'Untitled';
-  const channel = channelEl?.textContent.trim() || 'Unknown';
-  const thumbnail = imgEl?.src || imgEl?.getAttribute('data-thumb') || `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+  // 1. oEmbed lookup (Most reliable across all YouTube layouts)
+  try {
+    const resp = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`);
+    if (resp.ok) {
+      const data = await resp.json();
+      return {
+        videoId,
+        title: data.title || 'Untitled',
+        channel: data.author_name || 'Unknown',
+        thumbnail: data.thumbnail_url || fallbackThumb,
+      };
+    }
+  } catch (e) {
+    console.warn('[MarkTube] oEmbed fetch failed, attempting DOM fallback:', e);
+  }
+
+  // 2. Comprehensive DOM Fallback
+  let title = 'Untitled';
+  let channel = 'Unknown';
+  let thumbnail = fallbackThumb;
+
+  try {
+    if (cardEl?.tagName === 'YTD-WATCH-METADATA') {
+      title = cardEl.querySelector('h1 yt-formatted-string, h1')?.textContent?.trim() || 'Untitled';
+      channel = document.querySelector('ytd-channel-name a, #channel-name a')?.textContent?.trim() || 'Unknown';
+    } else if (cardEl) {
+      const titleEl =
+        cardEl.querySelector('#video-title') ||
+        cardEl.querySelector('yt-formatted-string#video-title') ||
+        cardEl.querySelector('h3 a') ||
+        cardEl.querySelector('yt-formatted-string') ||
+        cardEl.querySelector('.metadata a') ||
+        cardEl.querySelector('a#video-title-link');
+      title = titleEl?.textContent?.trim() || titleEl?.getAttribute('title')?.trim() || 'Untitled';
+
+      const channelEl =
+        cardEl.querySelector('ytd-channel-name a') ||
+        cardEl.querySelector('#channel-name a') ||
+        cardEl.querySelector('.ytd-channel-name') ||
+        cardEl.querySelector('#byline a') ||
+        cardEl.querySelector('yt-formatted-string#text');
+      channel = channelEl?.textContent?.trim() || 'Unknown';
+
+      const imgEl = cardEl.querySelector('a#thumbnail img, img');
+      thumbnail = imgEl?.src || imgEl?.getAttribute('data-thumb') || fallbackThumb;
+    }
+  } catch (err) {
+    console.error('[MarkTube] DOM fallback failed:', err);
+  }
 
   return { videoId, title, channel, thumbnail };
 }
@@ -57,7 +100,7 @@ async function handleMark(type, cardEl, videoId, arr, storageKey) {
       showToast(`⚠️ Removed from list: ${videoId}`);
     }
   } else {
-    const meta = extractMeta(cardEl, videoId);
+    const meta = await extractMeta(cardEl, videoId);
     arr.push(videoId);
     try {
       await db.put({ _id: docId, type, addedAt: Date.now(), ...meta });
@@ -77,7 +120,6 @@ async function handleMark(type, cardEl, videoId, arr, storageKey) {
     }
   }
 
-  // Update storage & broadcast timestamp for instant real-time UI refresh
   chrome.storage.local.set({ [storageKey]: arr, _mt_ts: Date.now() }, syncStorageAndUI);
 }
 
@@ -299,7 +341,6 @@ chrome.runtime.onMessage.addListener((msg) => {
   if (msg?.type === 'TOGGLE_SIDEBAR') toggleSidebar();
 });
 
-// Sync on storage change from sidebar or background
 if (typeof chrome !== 'undefined' && chrome.storage?.onChanged) {
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area === 'local') {
