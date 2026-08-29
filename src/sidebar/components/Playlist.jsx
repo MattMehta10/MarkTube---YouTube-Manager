@@ -1,41 +1,53 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
-const Playlist = ({ data, type }) => {
+const Playlist = ({ data, type, size }) => {
+  const [CardSize, setCardSize] = useState(size);
+
   const bg = (t) => {
-    if (t === 'watched') return 'from-green-950/40 to-green-900/10 border-green-500/30 hover:border-green-500/60';
-    if (t === 'toWatch') return 'from-yellow-950/40 to-yellow-900/10 border-yellow-500/30 hover:border-yellow-500/60';
-    if (t === 'important') return 'from-red-950/40 to-red-900/10 border-red-500/30 hover:border-red-500/60';
-    return 'from-gray-900/40 to-gray-800/10 border-gray-700/30 hover:border-gray-500/60';
+    if (t === 'watched') return 'to-green-500/15 hover:to-green-500/25';
+    else if (t === 'toWatch') return 'to-yellow-500/15 hover:to-yellow-500/25';
+    else if (t === 'important') return 'to-red-500/15 hover:to-red-500/25';
+    return 'to-gray-500/15';
   };
+
+  useEffect(() => {
+    setCardSize(size);
+  }, [size]);
 
   return (
     <div
-      className={`bg-gradient-to-r ${bg(
+      className={`bg-gradient-to-tr transition-all duration-500 ease-in-out from-70% from-transparent to-85% ${bg(
         type
-      )} border relative w-full h-[68px] px-2.5 py-1.5 flex gap-3 items-center rounded-2xl text-white cursor-pointer hover:scale-[1.01] transition-all duration-200 overflow-hidden shrink-0`}
+      )} relative hover:w-114 border-2 border-gray-500/30 w-112 whitespace-pre-wrap aspect-video flex gap-5 items-start rounded-2xl h-20 text-white`}
     >
-      <img
-        src={data.thumbnail || `https://img.youtube.com/vi/${data.videoId}/hqdefault.jpg`}
-        alt={data.title}
-        className="w-[96px] h-[52px] rounded-xl object-cover shrink-0 bg-gray-900"
-      />
+      <div className="w-[30%]">
+        <img
+          src={data.thumbnail || `https://img.youtube.com/vi/${data.videoId}/hqdefault.jpg`}
+          alt={data.title}
+          className="m-2 w-[110px] h-[60px] bg-cover bg-center rounded-2xl overflow-hidden bg-gray-200 object-cover"
+        />
+      </div>
 
-      <div className="flex-1 min-w-0 pr-1 flex flex-col justify-center">
-        <h1
-          className="text-[13px] font-[gilroy] font-bold leading-tight text-white overflow-hidden break-words"
-          style={{
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-            maxHeight: '2.4em',
-          }}
-        >
-          {data.title || 'Untitled'}
-        </h1>
+      <div className="w-[60%]">
+        <div className="mt-2 flex flex-col justify-start">
+          <h1
+            className="text-[14px] font-[gilroy] font-extrabold mt-1 leading-snug text-white overflow-hidden break-words"
+            style={{
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              maxHeight: '2.6em',
+            }}
+          >
+            {data.title || 'Untitled'}
+          </h1>
 
-        <p className="text-[11px] font-[gilroy] font-normal text-gray-400 truncate mt-0.5">
-          {data.channel || 'Unknown'}
-        </p>
+          <div>
+            <p className="text-[13px] font-[gilroy] mt-1 flex items-center gap-2 text-gray-300">
+              {data.channel || 'Unknown'}
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
