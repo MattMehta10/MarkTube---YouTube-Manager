@@ -1,0 +1,8 @@
+@font-face {
+  font-family: 'typold';
+  src: url('/The Northern Block Ltd - Typold Bold.otf') format('opentype');
+}
+
+.font-typold {
+  font-family: 'typold', system-ui, sans-serif;
+}
