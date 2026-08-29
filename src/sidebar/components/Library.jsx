@@ -164,8 +164,8 @@ const Library = () => {
         <hr className="my-1.5 w-full text-gray-400/20" />
       </div>
 
-      {/* Video List (5 cards) */}
-      <div className="flex-1 flex flex-col gap-1 justify-start items-center overflow-hidden py-0.5">
+      {/* Video List (5 cards - Left aligned) */}
+      <div className="flex-1 flex flex-col gap-1 justify-start items-start overflow-hidden py-0.5">
         {paginated.length ? (
           paginated.map((v) => (
             <a
@@ -173,13 +173,13 @@ const Library = () => {
               href={`https://www.youtube.com/watch?v=${v.videoId}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full flex justify-center shrink-0"
+              className="w-full flex justify-start shrink-0"
             >
               <Playlist data={v} size={100} type={v.type} />
             </a>
           ))
         ) : (
-          <p className="text-gray-400 mt-10 text-center">No videos found.</p>
+          <p className="text-gray-400 mt-10 text-center w-full">No videos found.</p>
         )}
       </div>
 

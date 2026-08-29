@@ -19,14 +19,14 @@ const Playlist = ({ data, type, size }) => {
       key={data._id || data.videoId}
       className={`bg-gradient-to-tr transition-all duration-500 ease-in-out from-70% from-transparent to-85% ${bg(
         type
-      )} relative hover:w-114 border-2 border-gray-500/30 w-112 whitespace-pre-wrap aspect-video flex gap-4 items-center rounded-2xl h-[72px] text-white cursor-pointer overflow-hidden shrink-0`}
+      )} relative hover:w-116 border-2 border-gray-500/30 w-112 whitespace-pre-wrap aspect-video flex gap-4 items-center rounded-2xl h-[74px] text-white cursor-pointer overflow-hidden shrink-0`}
     >
       {/* Thumbnail fixed with image tag for proper rendering */}
       <div className="w-[30%] shrink-0">
         <img
           src={data.thumbnail || `https://img.youtube.com/vi/${data.videoId}/hqdefault.jpg`}
           alt={data.title}
-          className="ml-2 w-[105px] h-[56px] bg-cover bg-center rounded-xl overflow-hidden bg-gray-200 object-cover"
+          className="ml-2 w-[105px] h-[58px] bg-cover bg-center rounded-xl overflow-hidden bg-gray-200 object-cover"
         />
       </div>
 
