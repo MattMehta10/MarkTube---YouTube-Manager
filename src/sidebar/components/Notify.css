@@ -1,0 +1,17 @@
+.myScrollArea {
+  overflow-y: scroll;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(113, 108, 108, 0.4) transparent;
+}
+
+.myScrollArea::-webkit-scrollbar {
+  width: 6px;
+}
+
+.myScrollArea::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.myScrollArea:hover::-webkit-scrollbar-thumb {
+  background: rgba(113, 108, 108, 0.4);
+}
