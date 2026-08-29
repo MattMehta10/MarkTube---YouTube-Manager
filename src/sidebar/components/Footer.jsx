@@ -15,13 +15,13 @@ const Footer = () => {
   const logo = getExtURL('logo.png');
 
   return (
-    <div className="flex absolute bottom-0 w-full flex-col z-50">
-      <div className="z-100 pb-1 h-9 w-full flex justify-between items-center px-3 bg-green-950/50">
+    <div className="flex w-full flex-col shrink-0 z-50">
+      <div className="pb-1 h-9 w-full flex justify-between items-center px-3 bg-green-950/80 border-t border-gray-800">
         <div className="options flex items-center gap-3">
           <Link to="/">
             <div
               className={`${
-                loc.pathname === '/' ? 'bg-green-700/30' : 'bg-transparent'
+                loc.pathname === '/' ? 'bg-green-700/50' : 'bg-transparent'
               } w-7 h-7 text-2xl flex justify-center items-center rounded-full hover:bg-green-700 cursor-pointer`}
             >
               <MdHome />
@@ -31,7 +31,7 @@ const Footer = () => {
           <Link to="/setting">
             <div
               className={`${
-                loc.pathname === '/setting' ? 'bg-green-700/30' : 'bg-transparent'
+                loc.pathname === '/setting' ? 'bg-green-700/50' : 'bg-transparent'
               } w-7 h-7 text-2xl flex justify-center items-center rounded-full hover:bg-green-700 cursor-pointer`}
             >
               <MdSettings />
@@ -58,7 +58,9 @@ const Footer = () => {
             <a href="https://marktube.netlify.app/" target="_blank" rel="noopener noreferrer">
               <img
                 src="https://res.cloudinary.com/ymatt/image/upload/v1763563209/logo_n4glcq.png"
-                onError={(e) => { e.target.src = logo; }}
+                onError={(e) => {
+                  e.target.src = logo;
+                }}
                 alt="MarkTube Logo"
                 className="w-full h-full object-contain"
               />

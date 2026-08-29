@@ -22,7 +22,7 @@ const Library = () => {
       const valid = res.rows.map((r) => r.doc).filter((doc) => doc && doc._id && !doc._id.startsWith('_design/'));
       setAllVideos(valid);
 
-      // Auto-repair any docs missing titles/channel names via oEmbed
+      // Auto-repair docs missing titles/channel names via oEmbed
       valid.forEach(async (doc) => {
         if (doc.videoId && (doc.title === 'Untitled' || doc.channel === 'Unknown')) {
           try {
@@ -129,17 +129,18 @@ const Library = () => {
   const paginated = filteredVideos.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   return (
-    <div className="px-5 pt-2.5 pb-1 flex flex-col items-center overflow-hidden">
-      <div className="w-full">
+    <div className="p-4 flex flex-col justify-between h-full overflow-hidden">
+      {/* Header & Filter Bar */}
+      <div className="flex flex-col gap-2 shrink-0">
         <h1 className="font-extrabold text-2xl text-white">All Videos</h1>
 
-        <div className="options mt-2.5 flex justify-between items-center">
-          <div className="flex gap-3 flex-wrap">
+        <div className="options mt-1.5 flex justify-between items-center">
+          <div className="flex gap-2.5">
             {['toWatch', 'important', 'watched', ''].map((type) => (
               <button
                 key={type}
                 onClick={() => setVidType(type)}
-                className={`h-8 px-4 text-sm rounded-md border border-gray-500 transition cursor-pointer ${
+                className={`h-8 px-3.5 text-xs font-semibold rounded-md border transition cursor-pointer ${
                   vidType === type ? 'opacity-50 bg-gray-700 text-white' : 'hover:bg-gray-800 text-white'
                 }`}
               >
@@ -154,136 +155,135 @@ const Library = () => {
 
           <button
             onClick={() => setSortOrder((p) => (p === 'asc' ? 'desc' : 'asc'))}
-            className="h-8 w-10 text-xl flex items-center justify-center border border-gray-500 rounded-md hover:bg-gray-800 text-white cursor-pointer"
+            className="h-8 w-9 text-xl flex items-center justify-center border border-gray-500 rounded-md hover:bg-gray-800 text-white cursor-pointer"
           >
             {sortOrder === 'asc' ? <GoSortAsc /> : <GoSortDesc />}
           </button>
         </div>
 
-        <hr className="my-2.5 w-full text-gray-400/20" />
+        <hr className="my-1.5 w-full text-gray-400/20" />
+      </div>
 
-        <div className="flex flex-col gap-2 items-center min-h-[415px]">
-          {paginated.length ? (
-            paginated.map((v) => (
-              <a
-                key={v._id || v.videoId}
-                href={`https://www.youtube.com/watch?v=${v.videoId}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full flex justify-center"
-              >
-                <Playlist data={v} size={100} type={v.type} />
-              </a>
-            ))
-          ) : (
-            <p className="text-gray-400 mt-10">No videos found.</p>
-          )}
-        </div>
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="mt-2">
-            <div className="flex items-center gap-3 justify-center">
-              <button
-                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                disabled={currentPage === 1}
-                className="px-1 py-1 rounded-xl bg-transparent hover:bg-gray-700 text-white disabled:opacity-40 cursor-pointer"
-                aria-label="Previous page"
-              >
-                <MdOutlineKeyboardDoubleArrowLeft />
-              </button>
-
-              <div className="flex items-center gap-2 px-2 py-1">
-                {(() => {
-                  const maxButtons = 7;
-                  const half = Math.floor(maxButtons / 2);
-                  let start = Math.max(1, currentPage - half);
-                  let end = Math.min(totalPages, currentPage + half);
-
-                  if (end - start + 1 < maxButtons) {
-                    start = Math.max(1, Math.min(start, totalPages - maxButtons + 1));
-                    end = Math.min(totalPages, start + maxButtons - 1);
-                  }
-
-                  const nodes = [];
-
-                  if (start > 1) {
-                    nodes.push(
-                      <button
-                        key={1}
-                        onClick={() => setCurrentPage(1)}
-                        className={`px-2 py-0.4 rounded cursor-pointer ${
-                          currentPage === 1
-                            ? 'bg-white text-black font-bold'
-                            : 'bg-gray-800 hover:bg-gray-600 text-white'
-                        }`}
-                      >
-                        1
-                      </button>
-                    );
-                    if (start > 2)
-                      nodes.push(
-                        <span key="l-ellipsis" className="px-2 text-gray-400">
-                          …
-                        </span>
-                      );
-                  }
-
-                  for (let p = start; p <= end; p++) {
-                    nodes.push(
-                      <button
-                        key={p}
-                        onClick={() => setCurrentPage(p)}
-                        className={`px-2 py-0.4 rounded cursor-pointer ${
-                          currentPage === p
-                            ? 'bg-white text-black font-bold'
-                            : 'bg-gray-800 hover:bg-gray-600 text-white'
-                        }`}
-                        aria-current={currentPage === p ? 'page' : undefined}
-                      >
-                        {p}
-                      </button>
-                    );
-                  }
-
-                  if (end < totalPages) {
-                    if (end < totalPages - 1)
-                      nodes.push(
-                        <span key="r-ellipsis" className="px-2 text-gray-400">
-                          …
-                        </span>
-                      );
-                    nodes.push(
-                      <button
-                        key={totalPages}
-                        onClick={() => setCurrentPage(totalPages)}
-                        className={`px-2 py-0.4 rounded cursor-pointer ${
-                          currentPage === totalPages
-                            ? 'bg-white text-black font-bold'
-                            : 'bg-gray-800 hover:bg-gray-600 text-white'
-                        }`}
-                      >
-                        {totalPages}
-                      </button>
-                    );
-                  }
-
-                  return nodes;
-                })()}
-              </div>
-
-              <button
-                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                disabled={currentPage === totalPages}
-                className="px-1 py-1 rounded-xl bg-transparent hover:bg-gray-700 text-white disabled:opacity-40 cursor-pointer"
-                aria-label="Next page"
-              >
-                <MdOutlineKeyboardDoubleArrowRight />
-              </button>
-            </div>
-          </div>
+      {/* Cards List */}
+      <div className="flex-1 flex flex-col gap-2 justify-start items-center overflow-hidden py-1">
+        {paginated.length ? (
+          paginated.map((v) => (
+            <a
+              key={v._id || v.videoId}
+              href={`https://www.youtube.com/watch?v=${v.videoId}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full flex justify-center shrink-0"
+            >
+              <Playlist data={v} size={100} type={v.type} />
+            </a>
+          ))
+        ) : (
+          <p className="text-gray-400 mt-10 text-center">No videos found.</p>
         )}
       </div>
+
+      {/* Pagination Bar Pinned cleanly above Footer */}
+      {totalPages > 1 && (
+        <div className="py-1 flex items-center gap-3 justify-center shrink-0">
+          <button
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+            className="px-1 py-1 rounded-xl bg-transparent hover:bg-gray-700 text-white disabled:opacity-40 cursor-pointer"
+            aria-label="Previous page"
+          >
+            <MdOutlineKeyboardDoubleArrowLeft />
+          </button>
+
+          <div className="flex items-center gap-2 px-2 py-1">
+            {(() => {
+              const maxButtons = 7;
+              const half = Math.floor(maxButtons / 2);
+              let start = Math.max(1, currentPage - half);
+              let end = Math.min(totalPages, currentPage + half);
+
+              if (end - start + 1 < maxButtons) {
+                start = Math.max(1, Math.min(start, totalPages - maxButtons + 1));
+                end = Math.min(totalPages, start + maxButtons - 1);
+              }
+
+              const nodes = [];
+
+              if (start > 1) {
+                nodes.push(
+                  <button
+                    key={1}
+                    onClick={() => setCurrentPage(1)}
+                    className={`px-2 py-0.4 rounded cursor-pointer ${
+                      currentPage === 1
+                        ? 'bg-white text-black font-bold'
+                        : 'bg-gray-800 hover:bg-gray-600 text-white'
+                    }`}
+                  >
+                    1
+                  </button>
+                );
+                if (start > 2)
+                  nodes.push(
+                    <span key="l-ellipsis" className="px-2 text-gray-400">
+                      …
+                    </span>
+                  );
+              }
+
+              for (let p = start; p <= end; p++) {
+                nodes.push(
+                  <button
+                    key={p}
+                    onClick={() => setCurrentPage(p)}
+                    className={`px-2 py-0.4 rounded cursor-pointer ${
+                      currentPage === p
+                        ? 'bg-white text-black font-bold'
+                        : 'bg-gray-800 hover:bg-gray-600 text-white'
+                    }`}
+                    aria-current={currentPage === p ? 'page' : undefined}
+                  >
+                    {p}
+                  </button>
+                );
+              }
+
+              if (end < totalPages) {
+                if (end < totalPages - 1)
+                  nodes.push(
+                    <span key="r-ellipsis" className="px-2 text-gray-400">
+                      …
+                    </span>
+                  );
+                nodes.push(
+                  <button
+                    key={totalPages}
+                    onClick={() => setCurrentPage(totalPages)}
+                    className={`px-2 py-0.4 rounded cursor-pointer ${
+                      currentPage === totalPages
+                        ? 'bg-white text-black font-bold'
+                        : 'bg-gray-800 hover:bg-gray-600 text-white'
+                    }`}
+                  >
+                    {totalPages}
+                  </button>
+                );
+              }
+
+              return nodes;
+            })()}
+          </div>
+
+          <button
+            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+            className="px-1 py-1 rounded-xl bg-transparent hover:bg-gray-700 text-white disabled:opacity-40 cursor-pointer"
+            aria-label="Next page"
+          >
+            <MdOutlineKeyboardDoubleArrowRight />
+          </button>
+        </div>
+      )}
     </div>
   );
 };

@@ -5,14 +5,12 @@ import { toast } from 'react-toastify';
 import { MTContext } from '../Wrapper';
 import { db } from '../utils/pouch';
 import Lottie from 'lottie-react';
-import { getExtURL } from '../utils/asset';
+import graphImgAsset from '../../../public/graph.png';
+import gridImgAsset from '../../../public/grid.png';
 
 const LottieComponent = typeof Lottie === 'function' ? Lottie : (Lottie?.default || Lottie);
 
 const Stats = () => {
-  const graphImg = getExtURL('graph.png');
-  const gridImg = getExtURL('grid.png');
-
   const context = useContext(MTContext) || {};
   const { watchCount = 0, impCount = 0, pendingCount = 0, fetchStats } = context;
 
@@ -54,23 +52,19 @@ const Stats = () => {
       <div className="border-gray-50/12 bg-radial from-gray-700/50 from-10% to-gray-950/30 border relative rounded-2xl w-54 h-30 flex items-center justify-center overflow-hidden">
         <img
           className="absolute h-25 w-50 opacity-100 object-contain"
-          src={graphImg}
+          src={graphImgAsset}
           onError={(e) => {
-            if (typeof chrome !== 'undefined' && chrome.runtime?.getURL) {
-              e.target.src = chrome.runtime.getURL('public/graph.png');
-            }
+            e.target.style.display = 'none';
           }}
-          alt="Graph"
+          alt=""
         />
         <img
           className="absolute h-30 w-80 opacity-30 object-cover"
-          src={gridImg}
+          src={gridImgAsset}
           onError={(e) => {
-            if (typeof chrome !== 'undefined' && chrome.runtime?.getURL) {
-              e.target.src = chrome.runtime.getURL('public/grid.png');
-            }
+            e.target.style.display = 'none';
           }}
-          alt="Grid"
+          alt=""
         />
       </div>
 
