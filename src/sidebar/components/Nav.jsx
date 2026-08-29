@@ -23,7 +23,7 @@ const Nav = () => {
   const avatar = getExtURL('Designer.jpeg');
 
   return (
-    <div className="px-3 py-3 relative flex items-center justify-between">
+    <div className="px-3 py-3 relative flex items-center justify-between shrink-0">
       <div className="flex gap-1 relative" ref={wrapperRef}>
         {isLogin || isSetting ? (
           <Link to={isSetting ? '/' : '/setting'}>
@@ -70,7 +70,10 @@ const Nav = () => {
             onError={(e) => { e.target.src = avatar; }}
             alt="profile"
             title="Profile"
-            className="w-6 h-6 p-[2px] rounded-full flex items-center justify-center text-2xl hover:bg-gray-800 cursor-pointer object-cover"
+            width={24}
+            height={24}
+            style={{ width: '24px', height: '24px', minWidth: '24px', minHeight: '24px' }}
+            className="w-6 h-6 p-[2px] rounded-full flex items-center justify-center hover:bg-gray-800 cursor-pointer object-cover shrink-0"
           />
         </Link>
       </div>
