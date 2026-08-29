@@ -32,6 +32,8 @@ function DashboardHome() {
   );
 }
 
+const SafeToastContainer = typeof ToastContainer === 'function' ? ToastContainer : (ToastContainer?.default || ToastContainer);
+
 export default function App() {
   return (
     <Wrapper>
@@ -45,7 +47,7 @@ export default function App() {
           </Route>
         </Routes>
       </HashRouter>
-      <ToastContainer position="bottom-right" theme="dark" />
+      {typeof SafeToastContainer === 'function' && <SafeToastContainer position="bottom-right" theme="dark" />}
     </Wrapper>
   );
 }

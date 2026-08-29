@@ -7,6 +7,8 @@ import { db } from '../utils/pouch';
 import { getExtURL } from '../utils/asset';
 import './stats.css';
 
+const LottieComponent = typeof Lottie === 'function' ? Lottie : (Lottie?.default || Lottie);
+
 const Stats = () => {
   const context = useContext(MTContext) || {};
   const { watchCount = 0, impCount = 0, pendingCount = 0, fetchStats } = context;
@@ -68,7 +70,9 @@ const Stats = () => {
           <div className="flex items-center gap-1 mt-3">
             {[...Array(3)].map((_, i) => (
               <div key={i} className="w-10 h-10 scale-120">
-                <Lottie animationData={animationdata} loop={true} />
+                {typeof LottieComponent === 'function' ? (
+                  <LottieComponent animationData={animationdata} loop={true} />
+                ) : null}
               </div>
             ))}
           </div>
