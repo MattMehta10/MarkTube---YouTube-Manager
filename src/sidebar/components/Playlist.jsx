@@ -1,24 +1,24 @@
 import React from 'react';
 
 const Playlist = ({ data, type }) => {
-  const getCardStyle = (t) => {
+  const getGlowColor = (t) => {
     if (t === 'watched') {
-      return 'bg-gradient-to-r from-[#071912] via-[#0d261c] to-[#16382a] border border-green-500/40 hover:border-green-400/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]';
+      return 'to-green-500/25 hover:to-green-500/35 border-green-500/40 hover:border-green-400/70';
     }
     if (t === 'toWatch') {
-      return 'bg-gradient-to-r from-[#1c1808] via-[#29220c] to-[#3a3011] border border-yellow-500/40 hover:border-yellow-400/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]';
+      return 'to-yellow-500/25 hover:to-yellow-500/35 border-yellow-500/40 hover:border-yellow-400/70';
     }
     if (t === 'important') {
-      return 'bg-gradient-to-r from-[#1c0808] via-[#2b0c0c] to-[#3d1212] border border-red-500/40 hover:border-red-400/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]';
+      return 'to-red-500/25 hover:to-red-500/35 border-red-500/40 hover:border-red-400/70';
     }
-    return 'bg-gradient-to-r from-[#0c101d] via-[#111728] to-[#1a233a] border border-gray-700/50 hover:border-gray-500/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]';
+    return 'to-gray-500/25 border-gray-700/50 hover:border-gray-500/70';
   };
 
   return (
     <div
-      className={`${getCardStyle(
+      className={`bg-gradient-to-tr from-65% from-transparent to-90% ${getGlowColor(
         type
-      )} relative w-full h-[72px] px-2.5 py-1.5 flex gap-3 items-center rounded-2xl text-white cursor-pointer hover:scale-[1.01] transition-all duration-200 overflow-hidden shrink-0`}
+      )} relative border w-full rounded-2xl h-[72px] px-2.5 py-1.5 flex gap-3 items-center text-white cursor-pointer hover:scale-[1.01] transition-all duration-300 overflow-hidden shrink-0 bg-[#090d16]/80`}
     >
       <div className="w-[106px] h-[56px] shrink-0 rounded-xl overflow-hidden bg-gray-900 shadow-md">
         <img
