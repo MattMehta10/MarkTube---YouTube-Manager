@@ -4,14 +4,12 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "dev:app": "vite",
-    "dev:ext": "npm run build && concurrently \"vite build --config vite.config.content.js --watch\" \"vite build --config vite.config.sidebar.js --watch\"",
     "build:content": "vite build --config vite.config.content.js",
     "build:sidebar": "vite build --config vite.config.sidebar.js",
     "build:background": "esbuild src/background/index.js --bundle --outfile=dist/assets/background.js --format=iife",
     "build:static": "node scripts/copy-static.js",
-    "build": "rimraf dist && npm run build:content && npm run build:sidebar && npm run build:background && npm run build:static && node scripts/copy-manifest.js"
+    "build": "rimraf dist && npm run build:content && npm run build:sidebar && npm run build:background && npm run build:static && node scripts/copy-manifest.js",
+    "dev": "npm run build && concurrently \"vite build --config vite.config.content.js --watch\" \"vite build --config vite.config.sidebar.js --watch\""
   },
   "dependencies": {
     "events": "^3.3.0",

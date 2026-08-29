@@ -135,7 +135,7 @@ const Library = () => {
         <h1 className="font-extrabold text-2xl text-white">All Videos</h1>
 
         <div className="options mt-2 flex justify-between items-center">
-          <div className="flex gap-3 flex-wrap">
+          <div className="flex gap-2 flex-wrap">
             {['toWatch', 'important', 'watched', ''].map((type) => (
               <button
                 key={type}
@@ -165,7 +165,7 @@ const Library = () => {
       </div>
 
       {/* Video List (5 cards distributed evenly) */}
-      <div className="flex-1 flex flex-col justify-between items-start overflow-hidden py-1">
+      <div className="flex-1 flex flex-col justify-between items-start py-1">
         {paginated.length ? (
           paginated.map((v) => (
             <a
