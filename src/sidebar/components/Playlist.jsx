@@ -1,20 +1,26 @@
 import React from 'react';
 
 const Playlist = ({ data, type }) => {
-  const bg = (t) => {
-    if (t === 'watched') return 'to-green-500/15 hover:to-green-500/25 border-green-500/30';
-    if (t === 'toWatch') return 'to-yellow-500/15 hover:to-yellow-500/25 border-yellow-500/30';
-    if (t === 'important') return 'to-red-500/15 hover:to-red-500/25 border-red-500/30';
-    return 'to-gray-500/15 border-gray-500/30';
+  const getCardStyle = (t) => {
+    if (t === 'watched') {
+      return 'bg-gradient-to-r from-[#071912] via-[#0d261c] to-[#16382a] border border-green-500/40 hover:border-green-400/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]';
+    }
+    if (t === 'toWatch') {
+      return 'bg-gradient-to-r from-[#1c1808] via-[#29220c] to-[#3a3011] border border-yellow-500/40 hover:border-yellow-400/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]';
+    }
+    if (t === 'important') {
+      return 'bg-gradient-to-r from-[#1c0808] via-[#2b0c0c] to-[#3d1212] border border-red-500/40 hover:border-red-400/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]';
+    }
+    return 'bg-gradient-to-r from-[#0c101d] via-[#111728] to-[#1a233a] border border-gray-700/50 hover:border-gray-500/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]';
   };
 
   return (
     <div
-      className={`bg-gradient-to-tr transition-all duration-300 ease-in-out from-70% from-transparent to-85% ${bg(
+      className={`${getCardStyle(
         type
-      )} relative border border-gray-500/30 w-full rounded-xl h-[62px] px-2 py-1 flex gap-3 items-center text-white cursor-pointer hover:scale-[1.01] shrink-0 overflow-hidden`}
+      )} relative w-full h-[72px] px-2.5 py-1.5 flex gap-3 items-center rounded-2xl text-white cursor-pointer hover:scale-[1.01] transition-all duration-200 overflow-hidden shrink-0`}
     >
-      <div className="w-[90px] h-[50px] shrink-0 rounded-lg overflow-hidden bg-gray-900">
+      <div className="w-[106px] h-[56px] shrink-0 rounded-xl overflow-hidden bg-gray-900 shadow-md">
         <img
           src={data.thumbnail || `https://img.youtube.com/vi/${data.videoId}/hqdefault.jpg`}
           alt={data.title}
@@ -24,7 +30,7 @@ const Playlist = ({ data, type }) => {
 
       <div className="flex-1 min-w-0 pr-1 flex flex-col justify-center">
         <h1
-          className="text-[12px] font-[gilroy] font-bold leading-tight text-white overflow-hidden break-words"
+          className="text-[13px] font-[typold] font-bold leading-snug text-white overflow-hidden break-words"
           style={{
             display: '-webkit-box',
             WebkitLineClamp: 2,
@@ -35,7 +41,7 @@ const Playlist = ({ data, type }) => {
           {data.title || 'Untitled'}
         </h1>
 
-        <p className="text-[10px] font-[gilroy] text-gray-400 truncate mt-0.5">
+        <p className="text-[11px] font-[typold] text-gray-400 truncate mt-0.5 font-normal">
           {data.channel || 'Unknown'}
         </p>
       </div>
