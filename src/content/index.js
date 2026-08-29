@@ -30,34 +30,37 @@ function extractVideoId(href) {
   return ampersandPos >= 0 ? id.slice(0, ampersandPos) : id;
 }
 
-async function extractMeta(cardEl, videoId) {
-  const fallbackThumb = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+async function fetchVideoMeta(cardEl, videoId) {
+  const thumbUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
 
-  // 1. oEmbed lookup (Most reliable across all YouTube layouts)
+  // 1. Try public YouTube oEmbed endpoint (100% reliable for title & channel name)
   try {
-    const resp = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`);
-    if (resp.ok) {
-      const data = await resp.json();
-      return {
-        videoId,
-        title: data.title || 'Untitled',
-        channel: data.author_name || 'Unknown',
-        thumbnail: data.thumbnail_url || fallbackThumb,
-      };
+    const res = await fetch(
+      `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`
+    );
+    if (res.ok) {
+      const data = await res.json();
+      if (data.title && data.title !== 'Untitled') {
+        return {
+          videoId,
+          title: data.title,
+          channel: data.author_name || 'Unknown',
+          thumbnail: data.thumbnail_url || thumbUrl,
+        };
+      }
     }
   } catch (e) {
-    console.warn('[MarkTube] oEmbed fetch failed, attempting DOM fallback:', e);
+    console.warn('[MarkTube] oEmbed lookup failed, falling back to DOM scraping:', e);
   }
 
-  // 2. Comprehensive DOM Fallback
+  // 2. DOM scraping fallback
   let title = 'Untitled';
   let channel = 'Unknown';
-  let thumbnail = fallbackThumb;
 
   try {
     if (cardEl?.tagName === 'YTD-WATCH-METADATA') {
-      title = cardEl.querySelector('h1 yt-formatted-string, h1')?.textContent?.trim() || 'Untitled';
-      channel = document.querySelector('ytd-channel-name a, #channel-name a')?.textContent?.trim() || 'Unknown';
+      title = cardEl.querySelector('h1 yt-formatted-string')?.textContent.trim() || 'Untitled';
+      channel = document.querySelector('ytd-channel-name a')?.textContent.trim() || 'Unknown';
     } else if (cardEl) {
       const titleEl =
         cardEl.querySelector('#video-title') ||
@@ -65,25 +68,21 @@ async function extractMeta(cardEl, videoId) {
         cardEl.querySelector('h3 a') ||
         cardEl.querySelector('yt-formatted-string') ||
         cardEl.querySelector('.metadata a') ||
-        cardEl.querySelector('a#video-title-link');
-      title = titleEl?.textContent?.trim() || titleEl?.getAttribute('title')?.trim() || 'Untitled';
+        cardEl.querySelector('.yt-lockup-metadata-view-model-wiz__title');
+      title = titleEl?.textContent.trim() || 'Untitled';
 
       const channelEl =
         cardEl.querySelector('ytd-channel-name a') ||
         cardEl.querySelector('#channel-name a') ||
-        cardEl.querySelector('.ytd-channel-name') ||
-        cardEl.querySelector('#byline a') ||
-        cardEl.querySelector('yt-formatted-string#text');
-      channel = channelEl?.textContent?.trim() || 'Unknown';
-
-      const imgEl = cardEl.querySelector('a#thumbnail img, img');
-      thumbnail = imgEl?.src || imgEl?.getAttribute('data-thumb') || fallbackThumb;
+        cardEl.querySelector('#text.ytd-channel-name') ||
+        cardEl.querySelector('.yt-lockup-metadata-view-model-wiz__subtitle');
+      channel = channelEl?.textContent.trim() || 'Unknown';
     }
   } catch (err) {
-    console.error('[MarkTube] DOM fallback failed:', err);
+    console.error('[MarkTube] DOM fallback error:', err);
   }
 
-  return { videoId, title, channel, thumbnail };
+  return { videoId, title, channel, thumbnail: thumbUrl };
 }
 
 async function handleMark(type, cardEl, videoId, arr, storageKey) {
@@ -100,7 +99,7 @@ async function handleMark(type, cardEl, videoId, arr, storageKey) {
       showToast(`⚠️ Removed from list: ${videoId}`);
     }
   } else {
-    const meta = await extractMeta(cardEl, videoId);
+    const meta = await fetchVideoMeta(cardEl, videoId);
     arr.push(videoId);
     try {
       await db.put({ _id: docId, type, addedAt: Date.now(), ...meta });
@@ -341,6 +340,7 @@ chrome.runtime.onMessage.addListener((msg) => {
   if (msg?.type === 'TOGGLE_SIDEBAR') toggleSidebar();
 });
 
+// Sync on storage change from sidebar or background
 if (typeof chrome !== 'undefined' && chrome.storage?.onChanged) {
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area === 'local') {
