@@ -46,7 +46,7 @@ const Stats = () => {
   }, [fetchStats]);
 
   return (
-    <div className="flex gap-2 flex-wrap items-center justify-center text-black w-117 h-50">
+    <div className="flex gap-2 flex-wrap items-center justify-center text-black w-117 shrink-0">
       <div className="text-white font-bold w-61 h-20 text-[23px] items-center flex p-2">
         <h1 id="greeting">Hey Yash! how are you today</h1>
       </div>

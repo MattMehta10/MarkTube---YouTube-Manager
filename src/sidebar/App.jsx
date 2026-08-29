@@ -12,14 +12,10 @@ import Notification from './components/Notify';
 
 function DashboardHome() {
   return (
-    <>
-      <div className="p-3">
-        <Stats />
-      </div>
-      <div className="p-3">
-        <VideoCont />
-      </div>
-    </>
+    <div className="p-3 flex flex-col gap-3 items-center justify-start h-full overflow-hidden">
+      <Stats />
+      <VideoCont />
+    </div>
   );
 }
 

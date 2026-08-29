@@ -22,7 +22,18 @@ html, body {
   background: #030712 !important;
   color: #ffffff !important;
   font-family: system-ui, -apple-system, sans-serif;
-  overflow: hidden;
+  overflow: hidden !important;
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+#mt-sidebar-root::-webkit-scrollbar,
+div::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
 #mt-sidebar-root {
@@ -30,23 +41,16 @@ html, body {
   height: 100vh;
   background: #030712 !important;
   color: #ffffff !important;
-  overflow: hidden;
+  overflow: hidden !important;
 }
 
 .myScrollArea {
-  overflow-y: scroll;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(113, 108, 108, 0.4) transparent;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 .myScrollArea::-webkit-scrollbar {
-  width: 6px;
-}
-
-.myScrollArea::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.myScrollArea:hover::-webkit-scrollbar-thumb {
-  background: rgba(113, 108, 108, 0.4);
+  display: none !important;
+  width: 0 !important;
 }
