@@ -40,6 +40,47 @@ export default function Wrapper({ children }) {
 
   useEffect(() => {
     fetchStats();
+
+    // 1. Live PouchDB listener
+    let changes;
+    try {
+      changes = db
+        .changes({
+          since: 'now',
+          live: true,
+          include_docs: true,
+        })
+        .on('change', () => {
+          fetchStats();
+        })
+        .on('error', (err) => {
+          console.error('[MarkTube] DB change error:', err);
+        });
+    } catch (e) {
+      console.warn(e);
+    }
+
+    // 2. Chrome Storage listener
+    const handleStorageChange = (changes, areaName) => {
+      if (areaName === 'local') {
+        fetchStats();
+      }
+    };
+
+    if (typeof chrome !== 'undefined' && chrome.storage?.onChanged) {
+      chrome.storage.onChanged.addListener(handleStorageChange);
+    }
+
+    // 3. Interval polling fallback for instant UI sync
+    const interval = setInterval(fetchStats, 1500);
+
+    return () => {
+      if (changes) changes.cancel();
+      if (typeof chrome !== 'undefined' && chrome.storage?.onChanged) {
+        chrome.storage.onChanged.removeListener(handleStorageChange);
+      }
+      clearInterval(interval);
+    };
   }, [fetchStats]);
 
   return (

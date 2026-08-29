@@ -31,6 +31,7 @@ const Library = () => {
 
   useEffect(() => {
     fetchVideos();
+
     let changes;
     try {
       changes = db
@@ -45,8 +46,25 @@ const Library = () => {
     } catch (e) {
       console.warn(e);
     }
+
+    const handleStorageChange = (changes, areaName) => {
+      if (areaName === 'local') {
+        fetchVideos();
+      }
+    };
+
+    if (typeof chrome !== 'undefined' && chrome.storage?.onChanged) {
+      chrome.storage.onChanged.addListener(handleStorageChange);
+    }
+
+    const interval = setInterval(fetchVideos, 1500);
+
     return () => {
       if (changes) changes.cancel();
+      if (typeof chrome !== 'undefined' && chrome.storage?.onChanged) {
+        chrome.storage.onChanged.removeListener(handleStorageChange);
+      }
+      clearInterval(interval);
     };
   }, []);
 

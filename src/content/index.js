@@ -77,7 +77,8 @@ async function handleMark(type, cardEl, videoId, arr, storageKey) {
     }
   }
 
-  chrome.storage.local.set({ [storageKey]: arr }, syncStorageAndUI);
+  // Update storage & broadcast timestamp for instant real-time UI refresh
+  chrome.storage.local.set({ [storageKey]: arr, _mt_ts: Date.now() }, syncStorageAndUI);
 }
 
 function toggleWatched(cardEl, videoId) {
@@ -297,6 +298,15 @@ function refreshPageUI() {
 chrome.runtime.onMessage.addListener((msg) => {
   if (msg?.type === 'TOGGLE_SIDEBAR') toggleSidebar();
 });
+
+// Sync on storage change from sidebar or background
+if (typeof chrome !== 'undefined' && chrome.storage?.onChanged) {
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === 'local') {
+      syncStorageAndUI();
+    }
+  });
+}
 
 syncStorageAndUI();
 setInterval(refreshPageUI, 1500);
