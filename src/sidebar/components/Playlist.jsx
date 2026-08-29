@@ -19,34 +19,34 @@ const Playlist = ({ data, type, size }) => {
       key={data._id || data.videoId}
       className={`bg-gradient-to-tr transition-all duration-500 ease-in-out from-70% from-transparent to-85% ${bg(
         type
-      )} relative hover:w-114 border-2 border-gray-500/30 w-112 whitespace-pre-wrap aspect-video flex gap-5 items-start rounded-2xl h-20 text-white cursor-pointer overflow-hidden shrink-0`}
+      )} relative hover:w-114 border-2 border-gray-500/30 w-112 whitespace-pre-wrap aspect-video flex gap-4 items-center rounded-2xl h-[65px] text-white cursor-pointer overflow-hidden shrink-0`}
     >
       {/* Thumbnail fixed with image tag for proper rendering */}
-      <div className="w-[30%]">
+      <div className="w-[30%] shrink-0">
         <img
           src={data.thumbnail || `https://img.youtube.com/vi/${data.videoId}/hqdefault.jpg`}
           alt={data.title}
-          className="m-2 w-[110px] h-[60px] bg-cover bg-center rounded-2xl overflow-hidden bg-gray-200 object-cover"
+          className="ml-2 w-[100px] h-[52px] bg-cover bg-center rounded-xl overflow-hidden bg-gray-200 object-cover"
         />
       </div>
 
       {/* Text & Info Block */}
-      <div className="w-[60%]">
-        <div className="mt-2 flex flex-col justify-start">
+      <div className="w-[65%] shrink-0">
+        <div className="flex flex-col justify-start">
           <h1
-            className="text-[14px] font-[gilroy] font-extrabold mt-1 leading-snug text-white overflow-hidden break-words"
+            className="text-[13px] font-[gilroy] font-extrabold leading-snug text-white overflow-hidden break-words"
             style={{
               display: '-webkit-box',
               WebkitLineClamp: 2,
               WebkitBoxOrient: 'vertical',
-              maxHeight: '2.6em',
+              maxHeight: '2.4em',
             }}
           >
             {data.title || 'Untitled'}
           </h1>
 
           <div>
-            <p className="text-[13px] mt-1 flex items-center gap-2 text-gray-300 font-[gilroy]">
+            <p className="text-[12px] mt-0.5 flex items-center gap-2 text-gray-300 font-[gilroy]">
               {data.channel || 'Unknown'}
             </p>
           </div>

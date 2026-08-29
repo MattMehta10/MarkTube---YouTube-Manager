@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { db } from '../utils/pouch';
 import Playlist from './Playlist';
 import { GoSortAsc, GoSortDesc } from 'react-icons/go';
+import { MdOutlineKeyboardDoubleArrowLeft, MdOutlineKeyboardDoubleArrowRight } from 'react-icons/md';
 import { toast } from 'react-toastify';
 import { useSearchParams } from 'react-router-dom';
 
@@ -128,47 +129,43 @@ const Library = () => {
   const paginated = filteredVideos.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   return (
-    <div className="px-5 py-3 flex flex-col justify-between h-full overflow-hidden bg-[#030712]">
-      {/* Header & Filter Bar */}
-      <div className="flex flex-col gap-2.5 shrink-0">
-        <h1 className="font-extrabold text-2xl text-white font-[typold]">All Videos</h1>
+    <div className="px-4 pt-3 pb-1 flex flex-col justify-between h-full overflow-hidden">
+      {/* Top Header & Filters */}
+      <div className="w-full shrink-0">
+        <h1 className="font-extrabold text-2xl text-white">All Videos</h1>
 
-        <div className="options flex justify-between items-center">
-          <div className="flex gap-2.5">
-            {[
-              { label: 'ToWatch', value: 'toWatch' },
-              { label: 'Important', value: 'important' },
-              { label: 'Watched', value: 'watched' },
-              { label: 'All', value: '' },
-            ].map((btn) => (
+        <div className="options mt-2 flex justify-between items-center">
+          <div className="flex gap-3 flex-wrap">
+            {['toWatch', 'important', 'watched', ''].map((type) => (
               <button
-                key={btn.value}
-                onClick={() => setVidType(btn.value)}
-                className={`h-8 px-4 text-xs font-[typold] font-medium rounded-lg border transition cursor-pointer ${
-                  vidType === btn.value
-                    ? 'bg-gray-800/90 border-gray-500 text-white font-bold'
-                    : 'border-gray-700/80 bg-[#0a0f1d]/60 text-gray-300 hover:bg-gray-800 hover:text-white'
+                key={type}
+                onClick={() => setVidType(type)}
+                className={`h-8 px-4 text-sm rounded-md border border-gray-500 transition cursor-pointer ${
+                  vidType === type ? 'opacity-50 bg-gray-700 text-white' : 'hover:bg-gray-800 text-white'
                 }`}
               >
-                {btn.label}
+                {type === ''
+                  ? 'All'
+                  : type === 'toWatch'
+                  ? 'ToWatch'
+                  : type.charAt(0).toUpperCase() + type.slice(1)}
               </button>
             ))}
           </div>
 
           <button
             onClick={() => setSortOrder((p) => (p === 'asc' ? 'desc' : 'asc'))}
-            className="h-8 w-9 text-base flex items-center justify-center border border-gray-700/80 rounded-lg bg-[#0a0f1d]/60 hover:bg-gray-800 text-white cursor-pointer"
-            title="Sort order"
+            className="h-8 w-10 text-xl flex items-center justify-center border border-gray-500 rounded-md hover:bg-gray-800 text-white cursor-pointer"
           >
             {sortOrder === 'asc' ? <GoSortAsc /> : <GoSortDesc />}
           </button>
         </div>
 
-        <hr className="border-gray-800/80 w-full" />
+        <hr className="my-2 w-full text-gray-400/20" />
       </div>
 
-      {/* Cards List */}
-      <div className="flex-1 flex flex-col gap-2 justify-start items-center overflow-hidden py-1">
+      {/* Video List (5 cards) */}
+      <div className="flex-1 flex flex-col gap-1.5 justify-start items-center overflow-hidden py-0.5">
         {paginated.length ? (
           paginated.map((v) => (
             <a
@@ -178,111 +175,115 @@ const Library = () => {
               rel="noopener noreferrer"
               className="w-full flex justify-center shrink-0"
             >
-              <Playlist data={v} type={v.type} />
+              <Playlist data={v} size={100} type={v.type} />
             </a>
           ))
         ) : (
-          <p className="text-gray-400 mt-10 text-center text-sm font-[typold]">No videos found.</p>
+          <p className="text-gray-400 mt-10 text-center">No videos found.</p>
         )}
       </div>
 
-      {/* Pagination Bar (Matching Image 1 EXACTLY) */}
+      {/* Pagination Bar */}
       {totalPages > 1 && (
-        <div className="py-1 flex items-center gap-1.5 justify-center shrink-0">
-          <button
-            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            disabled={currentPage === 1}
-            className="px-2 py-1 text-xs text-gray-500 hover:text-white disabled:opacity-30 cursor-pointer font-[typold]"
-          >
-            «
-          </button>
+        <div className="py-1 shrink-0">
+          <div className="flex items-center gap-3 justify-center">
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="px-1 py-1 rounded-xl bg-transparent hover:bg-gray-700 text-white disabled:opacity-40 cursor-pointer"
+              aria-label="Previous page"
+            >
+              <MdOutlineKeyboardDoubleArrowLeft />
+            </button>
 
-          <div className="flex items-center gap-1.5">
-            {(() => {
-              const maxButtons = 7;
-              const half = Math.floor(maxButtons / 2);
-              let start = Math.max(1, currentPage - half);
-              let end = Math.min(totalPages, currentPage + half);
+            <div className="flex items-center gap-2 px-2 py-0.5">
+              {(() => {
+                const maxButtons = 7;
+                const half = Math.floor(maxButtons / 2);
+                let start = Math.max(1, currentPage - half);
+                let end = Math.min(totalPages, currentPage + half);
 
-              if (end - start + 1 < maxButtons) {
-                start = Math.max(1, Math.min(start, totalPages - maxButtons + 1));
-                end = Math.min(totalPages, start + maxButtons - 1);
-              }
+                if (end - start + 1 < maxButtons) {
+                  start = Math.max(1, Math.min(start, totalPages - maxButtons + 1));
+                  end = Math.min(totalPages, start + maxButtons - 1);
+                }
 
-              const nodes = [];
+                const nodes = [];
 
-              if (start > 1) {
-                nodes.push(
-                  <button
-                    key={1}
-                    onClick={() => setCurrentPage(1)}
-                    className={`w-7 h-7 text-xs font-[typold] rounded-lg flex items-center justify-center transition cursor-pointer ${
-                      currentPage === 1
-                        ? 'bg-white text-black font-extrabold'
-                        : 'bg-[#131b2e] hover:bg-gray-700 text-gray-300 border border-gray-800'
-                    }`}
-                  >
-                    1
-                  </button>
-                );
-                if (start > 2)
+                if (start > 1) {
                   nodes.push(
-                    <span key="l-ellipsis" className="px-1 text-xs text-gray-500 font-[typold]">
-                      …
-                    </span>
+                    <button
+                      key={1}
+                      onClick={() => setCurrentPage(1)}
+                      className={`px-2 py-0.4 rounded cursor-pointer ${
+                        currentPage === 1
+                          ? 'bg-white text-black font-bold'
+                          : 'bg-gray-800 hover:bg-gray-600 text-white'
+                      }`}
+                    >
+                      1
+                    </button>
                   );
-              }
+                  if (start > 2)
+                    nodes.push(
+                      <span key="l-ellipsis" className="px-2 text-gray-400">
+                        …
+                      </span>
+                    );
+                }
 
-              for (let p = start; p <= end; p++) {
-                nodes.push(
-                  <button
-                    key={p}
-                    onClick={() => setCurrentPage(p)}
-                    className={`w-7 h-7 text-xs font-[typold] rounded-lg flex items-center justify-center transition cursor-pointer ${
-                      currentPage === p
-                        ? 'bg-white text-black font-extrabold'
-                        : 'bg-[#131b2e] hover:bg-gray-700 text-gray-300 border border-gray-800'
-                    }`}
-                    aria-current={currentPage === p ? 'page' : undefined}
-                  >
-                    {p}
-                  </button>
-                );
-              }
-
-              if (end < totalPages) {
-                if (end < totalPages - 1)
+                for (let p = start; p <= end; p++) {
                   nodes.push(
-                    <span key="r-ellipsis" className="px-1 text-xs text-gray-500 font-[typold]">
-                      …
-                    </span>
+                    <button
+                      key={p}
+                      onClick={() => setCurrentPage(p)}
+                      className={`px-2 py-0.4 rounded cursor-pointer ${
+                        currentPage === p
+                          ? 'bg-white text-black font-bold'
+                          : 'bg-gray-800 hover:bg-gray-600 text-white'
+                      }`}
+                      aria-current={currentPage === p ? 'page' : undefined}
+                    >
+                      {p}
+                    </button>
                   );
-                nodes.push(
-                  <button
-                    key={totalPages}
-                    onClick={() => setCurrentPage(totalPages)}
-                    className={`w-7 h-7 text-xs font-[typold] rounded-lg flex items-center justify-center transition cursor-pointer ${
-                      currentPage === totalPages
-                        ? 'bg-white text-black font-extrabold'
-                        : 'bg-[#131b2e] hover:bg-gray-700 text-gray-300 border border-gray-800'
-                    }`}
-                  >
-                    {totalPages}
-                  </button>
-                );
-              }
+                }
 
-              return nodes;
-            })()}
+                if (end < totalPages) {
+                  if (end < totalPages - 1)
+                    nodes.push(
+                      <span key="r-ellipsis" className="px-2 text-gray-400">
+                        …
+                      </span>
+                    );
+                  nodes.push(
+                    <button
+                      key={totalPages}
+                      onClick={() => setCurrentPage(totalPages)}
+                      className={`px-2 py-0.4 rounded cursor-pointer ${
+                        currentPage === totalPages
+                          ? 'bg-white text-black font-bold'
+                          : 'bg-gray-800 hover:bg-gray-600 text-white'
+                      }`}
+                    >
+                      {totalPages}
+                    </button>
+                  );
+                }
+
+                return nodes;
+              })()}
+            </div>
+
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="px-1 py-1 rounded-xl bg-transparent hover:bg-gray-700 text-white disabled:opacity-40 cursor-pointer"
+              aria-label="Next page"
+            >
+              <MdOutlineKeyboardDoubleArrowRight />
+            </button>
           </div>
-
-          <button
-            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-            disabled={currentPage === totalPages}
-            className="px-2 py-1 text-xs text-gray-500 hover:text-white disabled:opacity-30 cursor-pointer font-[typold]"
-          >
-            »
-          </button>
         </div>
       )}
     </div>
