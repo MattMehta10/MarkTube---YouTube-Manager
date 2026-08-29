@@ -129,19 +129,21 @@ const Library = () => {
   const paginated = filteredVideos.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   return (
-    <div className="p-4 flex flex-col justify-between h-full overflow-hidden">
+    <div className="px-4 py-2 flex flex-col justify-between h-full overflow-hidden">
       {/* Header & Filter Bar */}
-      <div className="flex flex-col gap-2 shrink-0">
-        <h1 className="font-extrabold text-2xl text-white">All Videos</h1>
+      <div className="flex flex-col gap-1.5 shrink-0">
+        <h1 className="font-extrabold text-xl text-white font-[gilroy]">All Videos</h1>
 
-        <div className="options mt-1.5 flex justify-between items-center">
-          <div className="flex gap-2.5">
+        <div className="options flex justify-between items-center">
+          <div className="flex gap-2">
             {['toWatch', 'important', 'watched', ''].map((type) => (
               <button
                 key={type}
                 onClick={() => setVidType(type)}
-                className={`h-8 px-3.5 text-xs font-semibold rounded-md border transition cursor-pointer ${
-                  vidType === type ? 'opacity-50 bg-gray-700 text-white' : 'hover:bg-gray-800 text-white'
+                className={`h-7 px-3 text-xs font-[gilroy] font-semibold rounded-md border transition cursor-pointer ${
+                  vidType === type
+                    ? 'opacity-50 bg-gray-700 text-white border-gray-500'
+                    : 'border-gray-600/80 hover:bg-gray-800 text-white'
                 }`}
               >
                 {type === ''
@@ -155,17 +157,17 @@ const Library = () => {
 
           <button
             onClick={() => setSortOrder((p) => (p === 'asc' ? 'desc' : 'asc'))}
-            className="h-8 w-9 text-xl flex items-center justify-center border border-gray-500 rounded-md hover:bg-gray-800 text-white cursor-pointer"
+            className="h-7 w-8 text-lg flex items-center justify-center border border-gray-600/80 rounded-md hover:bg-gray-800 text-white cursor-pointer"
           >
             {sortOrder === 'asc' ? <GoSortAsc /> : <GoSortDesc />}
           </button>
         </div>
 
-        <hr className="my-1.5 w-full text-gray-400/20" />
+        <hr className="my-1 border-gray-800 w-full" />
       </div>
 
       {/* Cards List */}
-      <div className="flex-1 flex flex-col gap-2 justify-start items-center overflow-hidden py-1">
+      <div className="flex-1 flex flex-col gap-1.5 justify-start items-center overflow-hidden py-1">
         {paginated.length ? (
           paginated.map((v) => (
             <a
@@ -175,27 +177,27 @@ const Library = () => {
               rel="noopener noreferrer"
               className="w-full flex justify-center shrink-0"
             >
-              <Playlist data={v} size={100} type={v.type} />
+              <Playlist data={v} type={v.type} />
             </a>
           ))
         ) : (
-          <p className="text-gray-400 mt-10 text-center">No videos found.</p>
+          <p className="text-gray-400 mt-10 text-center text-sm">No videos found.</p>
         )}
       </div>
 
       {/* Pagination Bar Pinned cleanly above Footer */}
       {totalPages > 1 && (
-        <div className="py-1 flex items-center gap-3 justify-center shrink-0">
+        <div className="py-1 flex items-center gap-2 justify-center shrink-0">
           <button
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
             disabled={currentPage === 1}
-            className="px-1 py-1 rounded-xl bg-transparent hover:bg-gray-700 text-white disabled:opacity-40 cursor-pointer"
+            className="px-1 py-1 rounded-xl bg-transparent hover:bg-gray-700 text-white disabled:opacity-40 cursor-pointer text-xs"
             aria-label="Previous page"
           >
             <MdOutlineKeyboardDoubleArrowLeft />
           </button>
 
-          <div className="flex items-center gap-2 px-2 py-1">
+          <div className="flex items-center gap-1.5 px-1 py-0.5">
             {(() => {
               const maxButtons = 7;
               const half = Math.floor(maxButtons / 2);
@@ -214,7 +216,7 @@ const Library = () => {
                   <button
                     key={1}
                     onClick={() => setCurrentPage(1)}
-                    className={`px-2 py-0.4 rounded cursor-pointer ${
+                    className={`px-2 py-0.5 text-xs rounded cursor-pointer ${
                       currentPage === 1
                         ? 'bg-white text-black font-bold'
                         : 'bg-gray-800 hover:bg-gray-600 text-white'
@@ -225,7 +227,7 @@ const Library = () => {
                 );
                 if (start > 2)
                   nodes.push(
-                    <span key="l-ellipsis" className="px-2 text-gray-400">
+                    <span key="l-ellipsis" className="px-1.5 text-xs text-gray-400">
                       …
                     </span>
                   );
@@ -236,7 +238,7 @@ const Library = () => {
                   <button
                     key={p}
                     onClick={() => setCurrentPage(p)}
-                    className={`px-2 py-0.4 rounded cursor-pointer ${
+                    className={`px-2 py-0.5 text-xs rounded cursor-pointer ${
                       currentPage === p
                         ? 'bg-white text-black font-bold'
                         : 'bg-gray-800 hover:bg-gray-600 text-white'
@@ -251,7 +253,7 @@ const Library = () => {
               if (end < totalPages) {
                 if (end < totalPages - 1)
                   nodes.push(
-                    <span key="r-ellipsis" className="px-2 text-gray-400">
+                    <span key="r-ellipsis" className="px-1.5 text-xs text-gray-400">
                       …
                     </span>
                   );
@@ -259,7 +261,7 @@ const Library = () => {
                   <button
                     key={totalPages}
                     onClick={() => setCurrentPage(totalPages)}
-                    className={`px-2 py-0.4 rounded cursor-pointer ${
+                    className={`px-2 py-0.5 text-xs rounded cursor-pointer ${
                       currentPage === totalPages
                         ? 'bg-white text-black font-bold'
                         : 'bg-gray-800 hover:bg-gray-600 text-white'
@@ -277,7 +279,7 @@ const Library = () => {
           <button
             onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
             disabled={currentPage === totalPages}
-            className="px-1 py-1 rounded-xl bg-transparent hover:bg-gray-700 text-white disabled:opacity-40 cursor-pointer"
+            className="px-1 py-1 rounded-xl bg-transparent hover:bg-gray-700 text-white disabled:opacity-40 cursor-pointer text-xs"
             aria-label="Next page"
           >
             <MdOutlineKeyboardDoubleArrowRight />
