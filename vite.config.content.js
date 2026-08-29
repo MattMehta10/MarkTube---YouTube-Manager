@@ -2,10 +2,11 @@ import { defineConfig } from 'vite';
 import { resolve } from 'path';
 
 // Builds the content script that runs on youtube.com.
-// IMPORTANT: entryFileNames here must exactly match manifest.json's
-// content_scripts.js entry. Never rename the output file by hand —
-// change it here instead.
 export default defineConfig({
+  define: {
+    'process.env.NODE_ENV': JSON.stringify('production'),
+    global: 'globalThis',
+  },
   build: {
     sourcemap: true,
     outDir: 'dist',

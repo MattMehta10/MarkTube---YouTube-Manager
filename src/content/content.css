@@ -1,0 +1,163 @@
+/* ——— Custom Fonts ——— */
+@font-face {
+    font-family: 'unisans';
+    src: url('/Unisansheavy.otf') format('opentype');
+}
+@font-face {
+    font-family: 'gilroy';
+    src: url('/The%20Northern%20Block%20Ltd%20-%20Typold%20Bold.otf') format('opentype');
+}
+
+/* ——— Toast Notifications ——— */
+.my-toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #1e293b;
+    color: #ffffff;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 99999999;
+    border: 1px solid #334155;
+    animation: fadeInOut 2.5s ease-in-out forwards;
+}
+
+@keyframes fadeInOut {
+    0% { opacity: 0; transform: translateY(10px); }
+    15% { opacity: 1; transform: translateY(0); }
+    85% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(10px); }
+}
+
+/* ——— Feed Hover Button Strip ——— */
+#btnstrip,
+.btnstrip {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    position: absolute;
+    right: 16px;
+    bottom: 5px;
+    padding: 6px 10px;
+    gap: clamp(4px, .5vw, 16px);
+    border-radius: 12px;
+    background: rgb(24, 24, 24);
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s;
+}
+
+#btnstrip.visible,
+.btnstrip.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* ——— Individual Circle Buttons ——— */
+.btns {
+    height: 20px;
+    width: 20px;
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #e5e7eb;
+    box-shadow: 0 1.5px 6px 0 rgba(0, 0, 0, 0.10);
+    margin: 0 2px;
+    pointer-events: auto;
+    transition: all 0.2s ease;
+    background: transparent;
+}
+
+/* — Watch — */
+.btns:nth-child(1) {
+    border-color: #22c55e;
+}
+.btns:nth-child(1):hover,
+.btns:nth-child(1).active {
+    background: #16a34a;
+    border-color: #16a34a;
+}
+
+/* — Important — */
+.btns:nth-child(2) {
+    border-color: #ef4444;
+}
+.btns:nth-child(2):hover,
+.btns:nth-child(2).active {
+    background: #b91c1c;
+    border-color: #b91c1c;
+}
+
+/* — To Watch — */
+.btns:nth-child(3) {
+    border-color: #fde047;
+}
+.btns:nth-child(3):hover,
+.btns:nth-child(3).active {
+    background: #facc15;
+    border-color: #facc15;
+    color: black;
+}
+
+/* ——— Button Group for Now Playing Video ——— */
+.myMTButtonContainer {
+    display: flex;
+    justify-content: flex-start;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+/* — Individual Buttons in Container — */
+.myMTButton {
+    background: transparent;
+    font-family: 'gilroy', system-ui, sans-serif;
+    font-weight: 900;
+    font-size: 16px;
+    padding: 5px 12px;
+    border-radius: 12px;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    cursor: pointer;
+    box-shadow: none;
+    z-index: 100;
+    position: relative;
+    color: var(--myMTButton-text, #fff) !important;
+}
+
+/* — Hover Styles for myMTButton — */
+.myMTButton.MtButton1:hover {
+    background-color: #1a5d21;
+    border-color: #1a5d21 !important;
+}
+.myMTButton.MtButton2:hover {
+    background-color: rgb(189, 22, 0);
+    border-color: rgb(189, 22, 0) !important;
+}
+.myMTButton.MtButton3:hover {
+    background-color: rgb(206, 193, 1);
+    border-color: rgb(206, 193, 1) !important;
+    color: black !important;
+}
+
+/* — Video Status: Watched — */
+.myBoxWatchedParent {
+    position: relative;
+    border: 2px solid transparent;
+    transition: border 0.3s ease;
+}
+
+/* — Color Theme Variables — */
+:root {
+    --myMTButton-text: black;
+}
+html[dark],
+ytd-app[dark] {
+    --myMTButton-text: #fff;
+}
