@@ -5,9 +5,9 @@ import Footer from './components/Footer';
 
 const MainLayout = () => {
   return (
-    <div className="bg-[#030712] border-r border-slate-800/80 relative overflow-hidden text-white w-full h-screen flex flex-col justify-between">
+    <div className="bg-[#030712] border-r-2 border-gray-600 relative overflow-hidden text-white min-w-[500px] max-w-[500px] h-screen">
       <Nav />
-      <div className="flex-1 overflow-y-auto pb-12">
+      <div className="h-[calc(100vh-90px)] overflow-y-auto pb-10">
         <Outlet />
       </div>
       <Footer />

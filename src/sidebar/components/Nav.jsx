@@ -7,6 +7,7 @@ import { IoMdCloudDone } from 'react-icons/io';
 import { GoArrowLeft } from 'react-icons/go';
 import { MTContext } from '../Wrapper';
 import Search from './Search';
+import { getExtURL } from '../utils/asset';
 
 const Nav = () => {
   const context = useContext(MTContext) || {};
@@ -19,32 +20,28 @@ const Nav = () => {
   const isLogin = location.pathname === '/login';
   const isSetting = location.pathname === '/setting';
 
+  const avatar = getExtURL('Designer.jpeg');
+
   return (
-    <div className="px-4 py-3 relative flex items-center justify-between bg-slate-950/80 border-b border-slate-800/60 backdrop-blur">
-      <div className="flex items-center gap-1.5 relative" ref={wrapperRef}>
+    <div className="px-3 py-3 relative flex items-center justify-between">
+      <div className="flex gap-1 relative" ref={wrapperRef}>
         {isLogin || isSetting ? (
           <Link to={isSetting ? '/' : '/setting'}>
-            <div
-              className="w-8 h-8 rounded-full flex items-center justify-center text-xl text-slate-300 hover:text-white hover:bg-slate-800 transition cursor-pointer"
-              title="Back"
-            >
+            <div className="w-8 h-8 p-[5px] rounded-full flex items-center justify-center text-3xl hover:bg-gray-800 cursor-pointer" title="Back">
               <GoArrowLeft />
             </div>
           </Link>
         ) : (
           <>
             <Link to={isLibrary ? '/' : '/library'}>
-              <div
-                className="w-8 h-8 rounded-full flex items-center justify-center text-xl text-slate-300 hover:text-white hover:bg-slate-800 transition cursor-pointer"
-                title={isLibrary ? 'Back' : 'Library'}
-              >
+              <div className="w-8 h-8 p-[5px] rounded-full flex items-center justify-center text-3xl hover:bg-gray-800 cursor-pointer" title={isLibrary ? 'Back' : 'Library'}>
                 {isLibrary ? <GoArrowLeft /> : <MdOutlineCollectionsBookmark />}
               </div>
             </Link>
 
             <div
-              className="w-8 h-8 rounded-full flex items-center justify-center text-xl text-slate-300 hover:text-white hover:bg-slate-800 transition cursor-pointer"
-              onClick={() => setShowSearch(!showSearch)}
+              className="w-8 h-8 p-[5px] rounded-full flex items-center justify-center text-3xl hover:bg-gray-800 cursor-pointer"
+              onClick={() => setShowSearch(true)}
               title="Search"
             >
               <IoIosSearch />
@@ -55,28 +52,26 @@ const Nav = () => {
         )}
       </div>
 
-      {/* Right Controls */}
-      <div className="flex items-center gap-3">
-        <div
-          title="Database Synced"
-          className="w-7 h-7 rounded-full flex items-center justify-center text-emerald-400 hover:bg-slate-800 transition"
-        >
-          <IoMdCloudDone className="text-lg" />
+      {/* Right Icons */}
+      <div className="flex gap-3 items-center">
+        <div title="Backup Status (Synced)" className="w-6 h-6 p-[2px] rounded-full flex items-center justify-center text-3xl hover:bg-gray-800">
+          <IoMdCloudDone />
         </div>
         <div
-          title="Notifications"
-          className="w-7 h-7 rounded-full flex items-center justify-center text-slate-300 hover:text-white hover:bg-slate-800 transition cursor-pointer"
+          title="Notification"
+          className="w-6 h-6 p-[2px] rounded-full flex items-center justify-center text-xl hover:bg-gray-800 cursor-pointer"
           onClick={() => setNotifshow && setNotifshow(!Notifshow)}
         >
-          <FaRegBell className="text-base" />
+          <FaRegBell />
         </div>
         <Link to="/login">
-          <div
-            title="Profile & Account"
-            className="w-7 h-7 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-xs font-semibold text-sky-400 hover:border-sky-400 transition overflow-hidden"
-          >
-            YM
-          </div>
+          <img
+            src="https://res.cloudinary.com/ymatt/image/upload/v1763563264/Designer_uptxpr.jpg"
+            onError={(e) => { e.target.src = avatar; }}
+            alt="profile"
+            title="Profile"
+            className="w-6 h-6 p-[2px] rounded-full flex items-center justify-center text-2xl hover:bg-gray-800 cursor-pointer object-cover"
+          />
         </Link>
       </div>
     </div>

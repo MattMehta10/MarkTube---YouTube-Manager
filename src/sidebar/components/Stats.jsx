@@ -1,22 +1,21 @@
 import React, { useContext, useEffect } from 'react';
-import Lottie from 'lottie-react';
+import './stats.css';
 import animationdata from '../../assets/Streak Fire.json';
 import { toast } from 'react-toastify';
 import { MTContext } from '../Wrapper';
 import { db } from '../utils/pouch';
+import Lottie from 'lottie-react';
 import { getExtURL } from '../utils/asset';
-import './stats.css';
 
 const LottieComponent = typeof Lottie === 'function' ? Lottie : (Lottie?.default || Lottie);
 
 const Stats = () => {
+  const graphImg = getExtURL('graph.png');
+  const gridImg = getExtURL('grid.png');
+
   const context = useContext(MTContext) || {};
   const { watchCount = 0, impCount = 0, pendingCount = 0, fetchStats } = context;
 
-  const gridImage = getExtURL('graph.png');
-  const gridPattern = getExtURL('grid.png');
-
-  // Fetch stats on mount + listen to live DB changes
   useEffect(() => {
     if (fetchStats) fetchStats();
 
@@ -35,10 +34,10 @@ const Stats = () => {
           }
         })
         .on('error', (err) => {
-          console.error('[MarkTube] Live DB listener error:', err);
+          console.error('❌ DB Change Listener Error:', err);
         });
     } catch (e) {
-      console.warn('[MarkTube] DB changes listener initialization failed:', e);
+      console.warn(e);
     }
 
     return () => {
@@ -47,51 +46,47 @@ const Stats = () => {
   }, [fetchStats]);
 
   return (
-    <div className="flex flex-col gap-3.5 p-3.5 items-center justify-center text-white w-full">
-      {/* Header Greeting */}
-      <div className="w-full flex items-center justify-between px-1">
-        <h1 className="font-typold text-xl font-bold text-slate-100 leading-snug">
-          Hey Yash! 👋 <br />
-          <span className="text-xs font-normal text-slate-400">Ready to expand your library today?</span>
-        </h1>
+    <div className="flex gap-2 flex-wrap items-center justify-center text-black w-117 h-50">
+      <div className="text-white font-bold w-61 h-20 text-[23px] items-center flex p-2">
+        <h1 id="greeting">Hey Yash! how are you today</h1>
       </div>
 
-      {/* Graph Card & Streak Container */}
-      <div className="grid grid-cols-2 gap-2.5 w-full">
-        {/* Graph Overview Card */}
-        <div className="relative rounded-2xl bg-gradient-to-br from-slate-800/60 to-slate-950/90 border border-slate-700/60 h-28 flex items-center justify-center overflow-hidden p-2">
-          <img src={gridImage} alt="Stats Graph" className="absolute h-20 w-44 opacity-80 object-contain" />
-          <img src={gridPattern} alt="Grid Overlay" className="absolute inset-0 w-full h-full opacity-20 object-cover" />
-        </div>
+      <div className="border-gray-50/12 bg-radial from-gray-700/50 from-10% to-gray-950/30 border relative rounded-2xl w-54 h-30 flex items-center justify-center overflow-hidden">
+        <img
+          className="absolute h-25 w-50 opacity-100 object-contain"
+          src={graphImg}
+          onError={(e) => { e.target.src = '/graph.png'; }}
+          alt="Graph"
+        />
+        <img
+          className="absolute h-30 w-80 opacity-30 object-cover"
+          src={gridImg}
+          onError={(e) => { e.target.src = '/grid.png'; }}
+          alt="Grid"
+        />
+      </div>
 
-        {/* Streak Animation Card */}
-        <div className="relative rounded-2xl bg-gradient-to-br from-slate-800/60 to-slate-950/90 border border-slate-700/60 h-28 flex flex-col items-center justify-center overflow-hidden p-2">
-          <span className="text-xs font-medium text-slate-300 absolute top-2 left-3">Learning Streak</span>
-          <div className="flex items-center gap-1 mt-3">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="w-10 h-10 scale-120">
-                {typeof LottieComponent === 'function' ? (
-                  <LottieComponent animationData={animationdata} loop={true} />
-                ) : null}
-              </div>
-            ))}
+      <div className="w-60 h-20 rounded-2xl bg-radial from-gray-700/50 from-10% to-gray-950/30 to-85% flex items-center border border-gray-50/12 bg-gray-50/5 overflow-hidden pt-5 p-2 relative justify-center bg-cover">
+        <p className="text-sm absolute text-white top-1 left-3">Streak</p>
+        {[...Array(5)].map((_, i) => (
+          <div key={i} className="scale-120 w-8 h-8 flex items-center justify-center">
+            {typeof LottieComponent === 'function' && <LottieComponent animationData={animationdata} loop={true} />}
           </div>
-        </div>
+        ))}
       </div>
 
-      {/* Stat Count Cards */}
-      <div className="grid grid-cols-3 gap-2.5 w-full">
-        <div className="relative bg-slate-900/80 border border-slate-800 hover:border-emerald-500/50 hover:bg-emerald-950/20 transition-all rounded-xl p-3 text-center cursor-pointer group">
-          <div className="text-xl font-extrabold text-emerald-400 group-hover:scale-105 transition-transform">{watchCount}</div>
-          <div className="text-[11px] font-medium text-slate-400 mt-0.5">Watched</div>
+      <div className="vidsec bg-transparent px-1 cursor-pointer bg-radial from-gray-700/40 from-0% to-gray-950/90 text-white flex justify-between items-center gap-2 rounded-2xl w-55 h-20">
+        <div className="font-[gilroy] relative border-l border-b border-gray-50/12 bg-gray-50/5 hover:bg-green-600/25 transition ease-in-out duration-500 flex active:scale-95 justify-center font-extrabold rounded-xl text-2xl w-17 h-20">
+          <h1 className="pt-3">{watchCount}</h1>
+          <p className="absolute bottom-2 text-[12px]">Watched</p>
         </div>
-        <div className="relative bg-slate-900/80 border border-slate-800 hover:border-amber-500/50 hover:bg-amber-950/20 transition-all rounded-xl p-3 text-center cursor-pointer group">
-          <div className="text-xl font-extrabold text-amber-400 group-hover:scale-105 transition-transform">{impCount}</div>
-          <div className="text-[11px] font-medium text-slate-400 mt-0.5">Important</div>
+        <div className="font-[gilroy] relative cursor-pointer border-l border-b border-gray-50/12 bg-gray-50/5 hover:bg-red-600/25 transition ease-in-out duration-500 active:scale-95 flex justify-center font-extrabold rounded-xl text-2xl w-17 h-20">
+          <h1 className="pt-3">{impCount}</h1>
+          <p className="absolute bottom-2 text-[12px]">Important</p>
         </div>
-        <div className="relative bg-slate-900/80 border border-slate-800 hover:border-sky-500/50 hover:bg-sky-950/20 transition-all rounded-xl p-3 text-center cursor-pointer group">
-          <div className="text-xl font-extrabold text-sky-400 group-hover:scale-105 transition-transform">{pendingCount}</div>
-          <div className="text-[11px] font-medium text-slate-400 mt-0.5">To Watch</div>
+        <div className="font-[gilroy] relative cursor-pointer border-l border-b border-gray-50/12 bg-gray-50/5 hover:bg-yellow-400/25 flex transition ease-in-out duration-500 active:scale-95 justify-center font-extrabold rounded-xl text-2xl w-17 h-20">
+          <h1 className="pt-3">{pendingCount}</h1>
+          <p className="absolute bottom-2 text-[12px]">Pending</p>
         </div>
       </div>
     </div>

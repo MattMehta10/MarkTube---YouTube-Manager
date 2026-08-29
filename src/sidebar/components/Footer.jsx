@@ -12,18 +12,17 @@ const Footer = () => {
   const context = useContext(MTContext) || {};
   const { theme, settheme } = context;
 
+  const logo = getExtURL('logo.png');
+
   return (
-    <div className="absolute bottom-0 w-full z-40">
-      <div className="h-10 w-full flex justify-between items-center px-4 bg-slate-950/90 border-t border-slate-800/80 backdrop-blur">
-        <div className="flex items-center gap-3">
+    <div className="flex absolute bottom-0 w-full flex-col z-50">
+      <div className="z-100 pb-1 h-9 w-full flex justify-between items-center px-3 bg-green-950/50">
+        <div className="options flex items-center gap-3">
           <Link to="/">
             <div
-              className={`w-7 h-7 text-lg flex justify-center items-center rounded-full transition ${
-                loc.pathname === '/'
-                  ? 'bg-emerald-600/30 text-emerald-400'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
-              }`}
-              title="Home"
+              className={`${
+                loc.pathname === '/' ? 'bg-green-700/30' : 'bg-transparent'
+              } w-7 h-7 text-2xl flex justify-center items-center rounded-full hover:bg-green-700 cursor-pointer`}
             >
               <MdHome />
             </div>
@@ -31,46 +30,40 @@ const Footer = () => {
 
           <Link to="/setting">
             <div
-              className={`w-7 h-7 text-lg flex justify-center items-center rounded-full transition ${
-                loc.pathname === '/setting'
-                  ? 'bg-emerald-600/30 text-emerald-400'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
-              }`}
-              title="Settings"
+              className={`${
+                loc.pathname === '/setting' ? 'bg-green-700/30' : 'bg-transparent'
+              } w-7 h-7 text-2xl flex justify-center items-center rounded-full hover:bg-green-700 cursor-pointer`}
             >
               <MdSettings />
             </div>
           </Link>
 
           <div
-            className="w-7 h-7 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
+            className="w-6 h-6 p-[2px] rounded-full flex items-center justify-center text-2xl hover:bg-gray-800 cursor-pointer"
             onClick={() => settheme && settheme(!theme)}
-            title="Toggle Theme"
           >
-            {theme ? <FiSun className="text-amber-400" /> : <AiOutlineMoon className="text-sky-400" />}
+            {theme ? <FiSun /> : <AiOutlineMoon />}
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <a
-            href="https://github.com/MattMehta10/MarkTube---YouTube-Manager/issues"
-            target="_blank"
-            rel="noopener noreferrer"
-            title="Feedback & Issues"
-            className="w-7 h-7 text-slate-400 hover:text-white hover:bg-slate-800 flex justify-center items-center rounded-full transition"
+        <div className="flex gap-3 items-center">
+          <div
+            title="Feedback"
+            className="w-7 h-7 text-sm flex justify-center items-center rounded-full p-[1px] hover:bg-green-700 cursor-pointer"
           >
-            <VscFeedback className="text-base" />
-          </a>
+            <VscFeedback />
+          </div>
 
-          <a
-            href="https://marktube.netlify.app/"
-            target="_blank"
-            rel="noopener noreferrer"
-            title="MarkTube Website"
-            className="w-6 h-6 flex justify-center items-center rounded-full overflow-hidden hover:opacity-80 transition"
-          >
-            <img src={getExtURL('logo.png')} alt="MarkTube Logo" className="w-full h-full object-contain" />
-          </a>
+          <div title="Website" className="w-7 h-7 text-xl flex justify-center items-center rounded-full">
+            <a href="https://marktube.netlify.app/" target="_blank" rel="noopener noreferrer">
+              <img
+                src="https://res.cloudinary.com/ymatt/image/upload/v1763563209/logo_n4glcq.png"
+                onError={(e) => { e.target.src = logo; }}
+                alt="MarkTube Logo"
+                className="w-full h-full object-contain"
+              />
+            </a>
+          </div>
         </div>
       </div>
     </div>

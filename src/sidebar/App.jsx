@@ -25,7 +25,7 @@ import Login from './components/Login';
 
 function DashboardHome() {
   return (
-    <div className="w-full flex flex-col gap-2 pb-6">
+    <div className="p-3 flex flex-col gap-3 items-center">
       <Stats />
       <VideoCont />
     </div>

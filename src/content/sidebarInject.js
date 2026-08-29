@@ -1,5 +1,5 @@
 const SIDEBAR_ID = 'mt-sidebar-host';
-const SIDEBAR_WIDTH = '400px';
+const SIDEBAR_WIDTH = '500px';
 
 export function injectSidebar() {
   if (document.getElementById(SIDEBAR_ID)) return;
