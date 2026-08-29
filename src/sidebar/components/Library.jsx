@@ -129,12 +129,12 @@ const Library = () => {
   const paginated = filteredVideos.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   return (
-    <div className="px-4 pt-3 pb-1 flex flex-col justify-between h-full overflow-hidden">
+    <div className="px-4 pt-2 pb-0.5 flex flex-col justify-between h-full overflow-hidden">
       {/* Top Header & Filters */}
       <div className="w-full shrink-0">
         <h1 className="font-extrabold text-2xl text-white">All Videos</h1>
 
-        <div className="options mt-2 flex justify-between items-center">
+        <div className="options mt-1.5 flex justify-between items-center">
           <div className="flex gap-3 flex-wrap">
             {['toWatch', 'important', 'watched', ''].map((type) => (
               <button
@@ -161,11 +161,11 @@ const Library = () => {
           </button>
         </div>
 
-        <hr className="my-2 w-full text-gray-400/20" />
+        <hr className="my-1.5 w-full text-gray-400/20" />
       </div>
 
       {/* Video List (5 cards) */}
-      <div className="flex-1 flex flex-col gap-1.5 justify-start items-center overflow-hidden py-0.5">
+      <div className="flex-1 flex flex-col gap-1 justify-start items-center overflow-hidden py-0.5">
         {paginated.length ? (
           paginated.map((v) => (
             <a
@@ -185,7 +185,7 @@ const Library = () => {
 
       {/* Pagination Bar */}
       {totalPages > 1 && (
-        <div className="py-1 shrink-0">
+        <div className="py-0.5 shrink-0">
           <div className="flex items-center gap-3 justify-center">
             <button
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
