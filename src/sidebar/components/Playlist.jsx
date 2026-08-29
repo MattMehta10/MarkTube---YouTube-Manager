@@ -1,49 +1,56 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
-const Playlist = ({ data, type }) => {
-  const getGlowColor = (t) => {
-    if (t === 'watched') {
-      return 'to-green-500/25 hover:to-green-500/35 border-green-500/40 hover:border-green-400/70';
-    }
-    if (t === 'toWatch') {
-      return 'to-yellow-500/25 hover:to-yellow-500/35 border-yellow-500/40 hover:border-yellow-400/70';
-    }
-    if (t === 'important') {
-      return 'to-red-500/25 hover:to-red-500/35 border-red-500/40 hover:border-red-400/70';
-    }
-    return 'to-gray-500/25 border-gray-700/50 hover:border-gray-500/70';
+const Playlist = ({ data, type, size }) => {
+  const [CardSize, setCardSize] = useState(size);
+
+  const bg = (t) => {
+    if (t === 'watched') return 'to-green-500/15 hover:to-green-500/25';
+    else if (t === 'toWatch') return 'to-yellow-500/15 hover:to-yellow-500/25';
+    else if (t === 'important') return 'to-red-500/15 hover:to-red-500/25';
+    return 'to-gray-500/15';
   };
+
+  useEffect(() => {
+    setCardSize(size);
+  }, [size]);
 
   return (
     <div
-      className={`bg-gradient-to-tr from-65% from-transparent to-90% ${getGlowColor(
+      key={data._id || data.videoId}
+      className={`bg-gradient-to-tr transition-all duration-500 ease-in-out from-70% from-transparent to-85% ${bg(
         type
-      )} relative border w-full rounded-2xl h-[72px] px-2.5 py-1.5 flex gap-3 items-center text-white cursor-pointer hover:scale-[1.01] transition-all duration-300 overflow-hidden shrink-0 bg-[#090d16]/80`}
+      )} relative hover:w-114 border-2 border-gray-500/30 w-112 whitespace-pre-wrap aspect-video flex gap-5 items-start rounded-2xl h-20 text-white cursor-pointer overflow-hidden shrink-0`}
     >
-      <div className="w-[106px] h-[56px] shrink-0 rounded-xl overflow-hidden bg-gray-900 shadow-md">
+      {/* Thumbnail fixed with image tag for proper rendering */}
+      <div className="w-[30%]">
         <img
           src={data.thumbnail || `https://img.youtube.com/vi/${data.videoId}/hqdefault.jpg`}
           alt={data.title}
-          className="w-full h-full object-cover"
+          className="m-2 w-[110px] h-[60px] bg-cover bg-center rounded-2xl overflow-hidden bg-gray-200 object-cover"
         />
       </div>
 
-      <div className="flex-1 min-w-0 pr-1 flex flex-col justify-center">
-        <h1
-          className="text-[13px] font-[typold] font-bold leading-snug text-white overflow-hidden break-words"
-          style={{
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-            maxHeight: '2.4em',
-          }}
-        >
-          {data.title || 'Untitled'}
-        </h1>
+      {/* Text & Info Block */}
+      <div className="w-[60%]">
+        <div className="mt-2 flex flex-col justify-start">
+          <h1
+            className="text-[14px] font-[gilroy] font-extrabold mt-1 leading-snug text-white overflow-hidden break-words"
+            style={{
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              maxHeight: '2.6em',
+            }}
+          >
+            {data.title || 'Untitled'}
+          </h1>
 
-        <p className="text-[11px] font-[typold] text-gray-400 truncate mt-0.5 font-normal">
-          {data.channel || 'Unknown'}
-        </p>
+          <div>
+            <p className="text-[13px] mt-1 flex items-center gap-2 text-gray-300 font-[gilroy]">
+              {data.channel || 'Unknown'}
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
