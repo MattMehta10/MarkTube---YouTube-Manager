@@ -2,116 +2,102 @@ import PouchDB from 'pouchdb';
 import './content.css';
 import { toggleSidebar } from './sidebarInject.js';
 
+// ////////////////////////////////////////////////////////////////////////////
+// SECTION 1: IMPORTS & INITIALIZATION
+// ////////////////////////////////////////////////////////////////////////////
+
 const db = new PouchDB('MTDataBase');
+
+// Initialize database connection confirmation toast
+setTimeout(() => {
+  showToast(`DATABASE CONNECTED✅${db.name}`);
+}, 1800);
+
+// ////////////////////////////////////////////////////////////////////////////
+// SECTION 2: CORE UTILITY FUNCTIONS
+// ////////////////////////////////////////////////////////////////////////////
+
+function markAsOwned(el, state = null) {
+  if (!el) return;
+  el.dataset.mtOwned = '1';
+  if (state) el.dataset.mtState = state;
+}
+
+function extractVideoId(url) {
+  if (!url) return null;
+  let id = url.split('v=')[1] || url.split('/shorts/')[1];
+  if (!id) return null;
+  const amp = id.indexOf('&');
+  return amp >= 0 ? id.slice(0, amp) : id;
+}
+
+// ////////////////////////////////////////////////////////////////////////////
+// SECTION 3: NOTIFICATIONS & DOM CLEANUP
+// ////////////////////////////////////////////////////////////////////////////
 
 function showToast(msg) {
   const existing = document.querySelector('.my-toast');
   if (existing) existing.remove();
-  const t = document.createElement('div');
-  t.textContent = msg;
-  t.className = 'my-toast';
-  document.body.appendChild(t);
-  setTimeout(() => t.remove(), 2500);
+  const el = document.createElement('div');
+  el.textContent = msg;
+  el.className = 'my-toast';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 2500);
 }
 
-const KEY_WATCHED = 'mtWatched';
-const KEY_IMPORTANT = 'mtImportant';
-const KEY_TOWATCH = 'mtToWatch';
+function clearInjectedVideoUI() {
+  document.querySelectorAll('[data-mt-owned="1"]').forEach((el) => {
+    el.style.border = '';
+    el.style.borderRadius = '';
+    el.style.position = '';
+    el.removeAttribute('data-mt-owned');
+    el.removeAttribute('data-mt-state');
+  });
 
-let watchedList = [];
-let importantList = [];
-let toWatchList = [];
-
-function extractVideoId(href) {
-  if (!href) return null;
-  let id = href.split('v=')[1] || href.split('/shorts/')[1];
-  if (!id) return null;
-  const ampersandPos = id.indexOf('&');
-  return ampersandPos >= 0 ? id.slice(0, ampersandPos) : id;
+  document
+    .querySelectorAll('.myMTButton, .myMTButtonContainer, #btnstrip, .btnstrip')
+    .forEach((el) => el.remove());
 }
 
-async function fetchVideoMeta(cardEl, videoId) {
-  const thumbUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+// ////////////////////////////////////////////////////////////////////////////
+// SECTION 4: STORAGE & DATABASE OPERATIONS
+// ////////////////////////////////////////////////////////////////////////////
 
-  // 1. Try public YouTube oEmbed endpoint (100% reliable for title & channel name)
-  try {
-    const res = await fetch(
-      `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`
-    );
-    if (res.ok) {
-      const data = await res.json();
-      if (data.title && data.title !== 'Untitled') {
-        return {
-          videoId,
-          title: data.title,
-          channel: data.author_name || 'Unknown',
-          thumbnail: data.thumbnail_url || thumbUrl,
-        };
-      }
-    }
-  } catch (e) {
-    console.warn('[MarkTube] oEmbed lookup failed, falling back to DOM scraping:', e);
-  }
+const WatchedStorageKey = 'mtWatched';
+const impStorageKey = 'mtImportant';
+const toWatchStorageKey = 'mtToWatch';
 
-  // 2. DOM scraping fallback
-  let title = 'Untitled';
-  let channel = 'Unknown';
+let watchedVideos = [];
+let impVideos = [];
+let toWatchVideos = [];
 
-  try {
-    if (cardEl?.tagName === 'YTD-WATCH-METADATA') {
-      title = cardEl.querySelector('h1 yt-formatted-string')?.textContent.trim() || 'Untitled';
-      channel = document.querySelector('ytd-channel-name a')?.textContent.trim() || 'Unknown';
-    } else if (cardEl) {
-      const titleEl =
-        cardEl.querySelector('#video-title') ||
-        cardEl.querySelector('yt-formatted-string#video-title') ||
-        cardEl.querySelector('h3 a') ||
-        cardEl.querySelector('yt-formatted-string') ||
-        cardEl.querySelector('.metadata a') ||
-        cardEl.querySelector('.yt-lockup-metadata-view-model-wiz__title');
-      title = titleEl?.textContent.trim() || 'Untitled';
+async function handleSave(type, el, videoId, list, storageKey) {
+  const idx = list.indexOf(videoId);
+  const _id = `video_${videoId}`;
 
-      const channelEl =
-        cardEl.querySelector('ytd-channel-name a') ||
-        cardEl.querySelector('#channel-name a') ||
-        cardEl.querySelector('#text.ytd-channel-name') ||
-        cardEl.querySelector('.yt-lockup-metadata-view-model-wiz__subtitle');
-      channel = channelEl?.textContent.trim() || 'Unknown';
-    }
-  } catch (err) {
-    console.error('[MarkTube] DOM fallback error:', err);
-  }
-
-  return { videoId, title, channel, thumbnail: thumbUrl };
-}
-
-async function handleMark(type, cardEl, videoId, arr, storageKey) {
-  const index = arr.indexOf(videoId);
-  const docId = `video_${videoId}`;
-
-  if (index >= 0) {
-    arr.splice(index, 1);
+  if (idx >= 0) {
+    list.splice(idx, 1);
     try {
-      const doc = await db.get(docId);
+      const doc = await db.get(_id);
       await db.remove(doc);
       showToast(`🗑️ Removed ${videoId} from DB`);
-    } catch (e) {
-      showToast(`⚠️ Removed from list: ${videoId}`);
+    } catch {
+      showToast(`⚠️ Not in DB: ${videoId}`);
     }
   } else {
-    const meta = await fetchVideoMeta(cardEl, videoId);
-    arr.push(videoId);
+    const meta = await extractVideoData(el, videoId);
+    list.push(videoId);
     try {
-      await db.put({ _id: docId, type, addedAt: Date.now(), ...meta });
+      await db.put({ _id, type, addedAt: Date.now(), ...meta });
       showToast(`✅ Marked as ${type}`);
     } catch (err) {
       if (err.status === 409) {
         try {
-          const doc = await db.get(docId);
-          await db.put({ ...doc, type, ...meta });
+          const existing = await db.get(_id);
+          await db.put({ ...existing, type, ...meta });
           showToast(`🔁 Updated ${videoId} to ${type}`);
         } catch {
-          showToast(`✅ Updated ${type}`);
+          showToast(`✅ Marked as ${type}`);
         }
       } else {
         showToast('❌ DB Save failed!');
@@ -119,42 +105,50 @@ async function handleMark(type, cardEl, videoId, arr, storageKey) {
     }
   }
 
-  chrome.storage.local.set({ [storageKey]: arr, _mt_ts: Date.now() }, syncStorageAndUI);
+  chrome.storage.local.set({ [storageKey]: list, _mt_ts: Date.now() }, getMarkedVideos);
 }
 
-function toggleWatched(cardEl, videoId) {
-  chrome.storage.local.get([KEY_WATCHED], (res) => {
-    watchedList = Array.isArray(res[KEY_WATCHED]) ? res[KEY_WATCHED].map(String) : [];
-    handleMark('watched', cardEl, videoId, watchedList, KEY_WATCHED);
+function saveWatchedVideo(el, videoId) {
+  chrome.storage.local.get([WatchedStorageKey], ({ [WatchedStorageKey]: w }) => {
+    watchedVideos = Array.isArray(w) ? w.map(String) : [];
+    handleSave('watched', el, videoId, watchedVideos, WatchedStorageKey);
   });
 }
 
-function toggleImportant(cardEl, videoId) {
-  chrome.storage.local.get([KEY_IMPORTANT], (res) => {
-    importantList = Array.isArray(res[KEY_IMPORTANT]) ? res[KEY_IMPORTANT].map(String) : [];
-    handleMark('important', cardEl, videoId, importantList, KEY_IMPORTANT);
+function saveImpVideo(el, videoId) {
+  chrome.storage.local.get([impStorageKey], ({ [impStorageKey]: i }) => {
+    impVideos = Array.isArray(i) ? i.map(String) : [];
+    handleSave('important', el, videoId, impVideos, impStorageKey);
   });
 }
 
-function toggleToWatch(cardEl, videoId) {
-  chrome.storage.local.get([KEY_TOWATCH], (res) => {
-    toWatchList = Array.isArray(res[KEY_TOWATCH]) ? res[KEY_TOWATCH].map(String) : [];
-    handleMark('toWatch', cardEl, videoId, toWatchList, KEY_TOWATCH);
+function saveToWatchVideo(el, videoId) {
+  chrome.storage.local.get([toWatchStorageKey], ({ [toWatchStorageKey]: t }) => {
+    toWatchVideos = Array.isArray(t) ? t.map(String) : [];
+    handleSave('toWatch', el, videoId, toWatchVideos, toWatchStorageKey);
   });
 }
 
-function syncStorageAndUI() {
-  chrome.storage.local.get([KEY_WATCHED, KEY_IMPORTANT, KEY_TOWATCH], (res) => {
-    watchedList = Array.isArray(res[KEY_WATCHED]) ? res[KEY_WATCHED].map(String) : [];
-    importantList = Array.isArray(res[KEY_IMPORTANT]) ? res[KEY_IMPORTANT].map(String) : [];
-    toWatchList = Array.isArray(res[KEY_TOWATCH]) ? res[KEY_TOWATCH].map(String) : [];
-    refreshPageUI();
-  });
+function getMarkedVideos() {
+  chrome.storage.local.get(
+    [WatchedStorageKey, impStorageKey, toWatchStorageKey],
+    ({ [WatchedStorageKey]: w, [impStorageKey]: i, [toWatchStorageKey]: t }) => {
+      watchedVideos = Array.isArray(w) ? w.map(String) : [];
+      impVideos = Array.isArray(i) ? i.map(String) : [];
+      toWatchVideos = Array.isArray(t) ? t.map(String) : [];
+      safeUpdateUI();
+    }
+  );
 }
 
-function injectFeedHoverButtons() {
-  let cards = [
+// ////////////////////////////////////////////////////////////////////////////
+// SECTION 5: FEED VIDEO UI - HOVER BUTTONS & INTERACTIONS
+// ////////////////////////////////////////////////////////////////////////////
+
+function addFeedButtons() {
+  let vidbox = [
     ...document.querySelectorAll('ytd-rich-item-renderer'),
+    ...document.querySelectorAll('.yt-lockup-view-model--compact'),
     ...document.querySelectorAll('ytd-compact-video-renderer'),
     ...document.querySelectorAll('ytd-video-renderer'),
     ...document.querySelectorAll('ytd-playlist-video-renderer'),
@@ -163,192 +157,395 @@ function injectFeedHoverButtons() {
     ...document.querySelectorAll('.yt-lockup-view-model-wiz--horizontal'),
   ];
 
-  cards = cards.filter(
-    (c) =>
-      !c.closest('ytd-reel-item-renderer') &&
-      !c.closest('ytd-rich-section-renderer') &&
-      !c.closest('ytd-reel-shelf-renderer') &&
-      !c.classList.contains('ytd-rich-grid-slim-media')
+  vidbox = vidbox.filter(
+    (el) =>
+      !el.closest('ytd-reel-item-renderer') &&
+      !el.closest('ytd-rich-section-renderer') &&
+      !el.closest('ytd-reel-shelf-renderer') &&
+      !el.closest('ytd-ad-slot-renderer') &&
+      !el.closest('yt-collection-thumbnail-view-model') &&
+      !el.classList.contains('ytd-rich-grid-slim-media')
   );
 
-  cards.forEach((card) => {
-    if (card.dataset.mtHovered) return;
+  vidbox.forEach((el) => {
+    if (!el.dataset.Hovered) {
+      el.addEventListener('mouseenter', () => {
+        let btnstrip = el.querySelector('#btnstrip');
+        if (btnstrip) btnstrip.remove();
 
-    card.addEventListener('mouseenter', () => {
-      let strip = card.querySelector('#btnstrip');
-      if (strip) strip.remove();
+        const anchor = el.querySelector('a[href*="/watch"]');
+        if (!anchor) return;
+        if (anchor.href.includes('/playlist?')) return;
+        if (el.querySelector('yt-collection-thumbnail-view-model')) return;
 
-      const anchor = card.querySelector('a[href*="/watch?v="]');
-      const videoId = extractVideoId(anchor?.href);
-      if (!videoId) return;
+        const videoId = extractVideoId(anchor.href);
+        if (!videoId) return;
 
-      strip = document.createElement('div');
-      strip.id = 'btnstrip';
-      strip.className = 'btnstrip visible';
+        btnstrip = document.createElement('div');
+        btnstrip.id = 'btnstrip';
+        btnstrip.innerHTML = `
+          <div class="btns" title="Mark as Watched"></div>
+          <div class="btns" title="Mark as Important"></div>
+          <div class="btns" title="Want to Watch"></div>
+        `;
+        btnstrip.classList.add('visible');
+        btnstrip.style.position = 'absolute';
+        btnstrip.style.right = '16px';
+        btnstrip.style.bottom = '5px';
+        btnstrip.style.zIndex = '10';
 
-      if (getComputedStyle(card).position === 'static') {
-        card.style.position = 'relative';
-      }
+        if (getComputedStyle(el).position === 'static') {
+          el.style.position = 'relative';
+          markAsOwned(el);
+        }
+        el.appendChild(btnstrip);
+        markAsOwned(el);
 
-      strip.innerHTML = `
-        <button class="btns btns-watched" title="Mark as Watched"></button>
-        <button class="btns btns-important" title="Mark as Important"></button>
-        <button class="btns btns-towatch" title="Mark for Watching"></button>
-      `;
+        const [btnW, btnI, btnT] = btnstrip.querySelectorAll('.btns');
 
-      card.appendChild(strip);
+        if (btnW) {
+          if (watchedVideos.includes(videoId)) btnW.classList.add('active');
+          btnW.addEventListener('click', (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            saveWatchedVideo(el, videoId);
+            btnW.classList.toggle('active');
+          });
+        }
 
-      const [btnW, btnI, btnT] = strip.querySelectorAll('.btns');
+        if (btnI) {
+          if (impVideos.includes(videoId)) btnI.classList.add('active');
+          btnI.addEventListener('click', (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            saveImpVideo(el, videoId);
+            btnI.classList.toggle('active');
+          });
+        }
 
-      if (btnW) {
-        if (watchedList.includes(videoId)) btnW.classList.add('active');
-        btnW.addEventListener('click', (e) => {
-          e.stopPropagation();
-          e.preventDefault();
-          toggleWatched(card, videoId);
-          btnW.classList.toggle('active');
-        });
-      }
+        if (btnT) {
+          if (toWatchVideos.includes(videoId)) btnT.classList.add('active');
+          btnT.addEventListener('click', (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            saveToWatchVideo(el, videoId);
+            btnT.classList.toggle('active');
+          });
+        }
+      });
 
-      if (btnI) {
-        if (importantList.includes(videoId)) btnI.classList.add('active');
-        btnI.addEventListener('click', (e) => {
-          e.stopPropagation();
-          e.preventDefault();
-          toggleImportant(card, videoId);
-          btnI.classList.toggle('active');
-        });
-      }
+      el.addEventListener('mouseleave', () => {
+        const btnstrip = el.querySelector('#btnstrip');
+        if (btnstrip) {
+          btnstrip.classList.remove('visible');
+          setTimeout(() => {
+            if (btnstrip && btnstrip.parentNode) btnstrip.remove();
+          }, 250);
+        }
+      });
 
-      if (btnT) {
-        if (toWatchList.includes(videoId)) btnT.classList.add('active');
-        btnT.addEventListener('click', (e) => {
-          e.stopPropagation();
-          e.preventDefault();
-          toggleToWatch(card, videoId);
-          btnT.classList.toggle('active');
-        });
-      }
-    });
-
-    card.addEventListener('mouseleave', () => {
-      const strip = card.querySelector('#btnstrip');
-      if (strip) {
-        strip.classList.remove('visible');
-        setTimeout(() => {
-          if (strip && strip.parentNode) strip.remove();
-        }, 250);
-      }
-    });
-
-    card.dataset.mtHovered = '1';
+      el.dataset.Hovered = '1';
+    }
   });
 }
 
-function updateCardBorders(card, videoId) {
+// ////////////////////////////////////////////////////////////////////////////
+// SECTION 6: VIDEO STATUS INDICATORS - COLORED BORDERS
+// ////////////////////////////////////////////////////////////////////////////
+
+function updateWatchedStatus(el, videoId) {
+  const isWatched = watchedVideos.includes(videoId);
+  const isImp = impVideos.includes(videoId);
+  const isToWatch = toWatchVideos.includes(videoId);
+  const isPlaying = el.closest('ytd-watch-metadata') !== null;
+
   const container =
-    card.closest(
-      'ytd-rich-item-renderer, ytd-video-renderer, ytd-compact-video-renderer, ytd-grid-video-renderer, ytd-playlist-video-renderer, ytd-playlist-panel-video-renderer, .yt-lockup-view-model-wiz--horizontal'
-    ) || card.parentElement;
+    el.closest('.yt-lockup-view-model-wiz.yt-lockup-view-model-wiz--horizontal') ||
+    el.closest('.yt-lockup-view-model--compact') ||
+    el.closest('ytd-rich-item-renderer') ||
+    el.closest('ytd-video-renderer') ||
+    el.closest('ytd-grid-video-renderer') ||
+    el.closest('ytd-playlist-video-renderer') ||
+    el.closest('ytd-compact-video-renderer') ||
+    el.closest('ytd-playlist-panel-video-renderer') ||
+    el.closest('ytd-watch-next-secondary-results-renderer') ||
+    el.parentElement;
 
   if (!container) return;
 
-  const isWatched = watchedList.includes(videoId);
-  const isImportant = importantList.includes(videoId);
-  const isToWatch = toWatchList.includes(videoId);
+  if (container.dataset.mtOwned === '1') {
+    container.style.border = '';
+    container.style.borderRadius = '';
+    container.removeAttribute('data-mt-state');
+  }
 
-  if (isToWatch) {
-    container.style.border = '2px solid goldenrod';
-    container.style.borderRadius = '10px';
-  } else if (isImportant) {
-    container.style.border = '2px solid red';
-    container.style.borderRadius = '10px';
-  } else if (isWatched) {
-    container.style.border = '2px solid green';
-    container.style.borderRadius = '10px';
+  if (!isPlaying) {
+    let applied = false;
+
+    if (isToWatch) {
+      container.style.border = '2px solid goldenrod';
+      markAsOwned(container, 'toWatch');
+      applied = true;
+    } else if (isImp) {
+      container.style.border = '2px solid red';
+      markAsOwned(container, 'important');
+      applied = true;
+    } else if (isWatched) {
+      container.style.border = '2px solid green';
+      markAsOwned(container, 'watched');
+      applied = true;
+    }
+    if (applied) {
+      container.style.borderRadius = '10px';
+    }
   } else {
+    let btn = container.querySelector('.myMTButton');
+    if (!btn) {
+      btn = document.createElement('button');
+      btn.className = 'myMTButton';
+      btn.textContent = 'Mark as Watched';
+      btn.style.cssText = 'border-radius:12px;padding:5px 10px;margin:10px 0';
+      btn.addEventListener('click', () => saveWatchedVideo(el, videoId));
+      container.insertBefore(btn, container.firstChild);
+    }
+    btn.textContent = isWatched ? 'Watched' : 'Mark as Watched';
     container.style.border = 'none';
+    markAsOwned(container, 'playing');
   }
 }
 
-function injectWatchMetadataButtons(metadataEl, videoId) {
-  let container = metadataEl.previousElementSibling;
+function updateUI() {
+  // 🎬 Now Playing
+  document.querySelectorAll('ytd-watch-metadata').forEach((el) => {
+    const vid = el.getAttribute('video-id') || extractVideoId(window.location.href);
+    if (vid) createOrUpdateWatchedButton(el, vid);
+  });
+
+  // ✅ Regular feed videos
+  document
+    .querySelectorAll(
+      `
+      div#dismissible,
+      ytd-playlist-panel-video-renderer > #wc-endpoint,
+      ytd-playlist-video-renderer > #content,
+      ytd-rich-item-renderer #content,
+      .yt-lockup-view-model-wiz.yt-lockup-view-model-wiz--horizontal,
+      .yt-lockup-view-model--compact
+    `
+    )
+    .forEach((el) => {
+      const thumb = el.querySelector('a#thumbnail, a[href*="/watch"]');
+      const vid = extractVideoId(thumb?.href);
+      if (vid) updateWatchedStatus(el, vid);
+    });
+}
+
+// ////////////////////////////////////////////////////////////////////////////
+// SECTION 7: CURRENTLY PLAYING VIDEO UI - ACTION BUTTONS
+// ////////////////////////////////////////////////////////////////////////////
+
+function createOrUpdateWatchedButton(el, videoId) {
+  let container = el.previousElementSibling;
   if (!container || !container.classList.contains('myMTButtonContainer')) {
     container = document.createElement('div');
     container.className = 'myMTButtonContainer';
 
-    const b1 = document.createElement('button');
-    b1.className = 'myMTButton MtButton1';
+    const btnW = document.createElement('button');
+    btnW.className = 'myMTButton MtButton1';
+    btnW.style.cssText = 'border-radius:12px;padding:5px 10px;margin:10px 0';
 
-    const b2 = document.createElement('button');
-    b2.className = 'myMTButton MtButton2';
+    const btnI = document.createElement('button');
+    btnI.className = 'myMTButton MtButton2';
+    btnI.style.cssText = 'border-radius:12px;padding:5px 10px;margin:10px 0';
 
-    const b3 = document.createElement('button');
-    b3.className = 'myMTButton MtButton3';
+    const btnT = document.createElement('button');
+    btnT.className = 'myMTButton MtButton3';
+    btnT.style.cssText = 'border-radius:12px;padding:5px 10px;margin:10px 0';
 
-    container.appendChild(b1);
-    container.appendChild(b2);
-    container.appendChild(b3);
-
-    metadataEl.parentNode.insertBefore(container, metadataEl);
+    container.appendChild(btnW);
+    container.appendChild(btnI);
+    container.appendChild(btnT);
+    el.parentNode.insertBefore(container, el);
   }
 
   const [btnW, btnI, btnT] = container.querySelectorAll('button');
 
-  btnW.onclick = () => toggleWatched(metadataEl, videoId);
-  btnI.onclick = () => toggleImportant(metadataEl, videoId);
-  btnT.onclick = () => toggleToWatch(metadataEl, videoId);
+  btnW.onclick = () => saveWatchedVideo(el, videoId);
+  btnI.onclick = () => saveImpVideo(el, videoId);
+  btnT.onclick = () => saveToWatchVideo(el, videoId);
 
-  const isWatched = watchedList.includes(videoId);
-  const isImportant = importantList.includes(videoId);
-  const isToWatch = toWatchList.includes(videoId);
+  const isWatched = watchedVideos.includes(videoId);
+  const isImp = impVideos.includes(videoId);
+  const isToWatch = toWatchVideos.includes(videoId);
 
   btnW.textContent = isWatched ? 'Watched' : 'Mark as Watched';
   btnW.style.backgroundColor = isWatched ? '#237b2c' : '';
   btnW.style.border = isWatched ? 'none' : '1px solid #19b929';
 
-  btnI.textContent = isImportant ? 'IMP' : 'Mark as Important';
-  btnI.style.backgroundColor = isImportant ? 'red' : '';
-  btnI.style.border = isImportant ? 'none' : '1px solid rgb(255, 30, 0)';
+  btnI.textContent = isImp ? 'IMP' : 'Mark as Important';
+  btnI.style.backgroundColor = isImp ? 'red' : '';
+  btnI.style.border = isImp ? 'none' : '1px solid rgb(255, 30, 0)';
 
   btnT.textContent = isToWatch ? 'Want to Watch' : 'Mark for Watching';
   btnT.style.backgroundColor = isToWatch ? 'goldenrod' : '';
   btnT.style.border = isToWatch ? 'none' : '1px solid yellow';
   btnT.style.setProperty('color', isToWatch ? 'black' : '', 'important');
 
-  metadataEl.style.border = 'none';
+  el.style.border = 'none';
 }
 
-function refreshPageUI() {
-  document.querySelectorAll('ytd-watch-metadata').forEach((metaEl) => {
-    const videoId = metaEl.getAttribute('video-id') || extractVideoId(window.location.href);
-    if (videoId) injectWatchMetadataButtons(metaEl, videoId);
+// ////////////////////////////////////////////////////////////////////////////
+// SECTION 8: METADATA EXTRACTION (OEMBED + DOM FALLBACK)
+// ////////////////////////////////////////////////////////////////////////////
+
+async function extractVideoData(el, videoId) {
+  const fallbackThumbnail = `https://img.youtube.com/vi/${videoId}/0.jpg`;
+
+  try {
+    const response = await fetch(
+      `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`
+    );
+
+    if (!response.ok) {
+      throw new Error(`oEmbed failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    return {
+      videoId,
+      title: data.title || 'Untitled',
+      channel: data.author_name || 'Unknown',
+      thumbnail: data.thumbnail_url || fallbackThumbnail,
+    };
+  } catch (error) {
+    console.warn('oEmbed failed, falling back to DOM scraping', error);
+
+    try {
+      let title = 'Untitled';
+      let channel = 'Unknown';
+
+      if (el?.tagName === 'YTD-WATCH-METADATA') {
+        title = el.querySelector('h1 yt-formatted-string')?.textContent.trim() || 'Untitled';
+        channel = document.querySelector('ytd-channel-name a')?.textContent.trim() || 'Unknown';
+      } else if (el) {
+        const titleEl =
+          el.querySelector('#video-title') ||
+          el.querySelector('yt-formatted-string#video-title') ||
+          el.querySelector('h3 a') ||
+          el.querySelector('yt-formatted-string') ||
+          el.querySelector('.metadata a');
+
+        title = titleEl?.textContent.trim() || 'Untitled';
+        channel = el.querySelector('ytd-channel-name a')?.textContent.trim() || 'Unknown';
+      }
+
+      return {
+        videoId,
+        title,
+        channel,
+        thumbnail: fallbackThumbnail,
+      };
+    } catch (domError) {
+      console.error('DOM fallback failed', domError);
+
+      return {
+        videoId,
+        title: 'Untitled',
+        channel: 'Unknown',
+        thumbnail: fallbackThumbnail,
+      };
+    }
+  }
+}
+
+// ////////////////////////////////////////////////////////////////////////////
+// SECTION 9: ROUTING & CONDITIONAL LOGIC
+// ////////////////////////////////////////////////////////////////////////////
+
+function getPageMode() {
+  const path = location.pathname;
+  if (path.startsWith('/feed/playlists')) return 'PLAYLIST_OVERVIEW';
+  if (path.startsWith('/feed/courses')) return 'COURSES';
+  if (path.endsWith('/courses')) return 'COURSES';
+  if (path.endsWith('/playlists')) return 'PLAYLIST_OVERVIEW';
+  return 'VIDEO_FEED';
+}
+
+function shouldRunVideoUI() {
+  return getPageMode() === 'VIDEO_FEED';
+}
+
+// ////////////////////////////////////////////////////////////////////////////
+// SECTION 10: DEBOUNCED UI UPDATES & DOM MONITORING
+// ////////////////////////////////////////////////////////////////////////////
+
+let uiTimeout;
+
+function safeUpdateUI() {
+  clearTimeout(uiTimeout);
+
+  if (!shouldRunVideoUI()) {
+    clearInjectedVideoUI();
+    return;
+  }
+  uiTimeout = setTimeout(() => {
+    updateUI();
+    addFeedButtons();
+  }, 200);
+}
+
+let observer;
+
+function startObserver() {
+  const target = document.querySelector('ytd-page-manager') || document.body;
+  if (observer) observer.disconnect();
+
+  observer = new MutationObserver(() => {
+    safeUpdateUI();
   });
 
-  document
-    .querySelectorAll(
-      'div#dismissible, ytd-playlist-panel-video-renderer > #wc-endpoint, ytd-playlist-video-renderer > #content, ytd-rich-item-renderer #content'
-    )
-    .forEach((card) => {
-      const thumbnailAnchor = card.querySelector('a#thumbnail') || card.querySelector('.reel-item-endpoint');
-      const videoId = extractVideoId(thumbnailAnchor?.href);
-      if (videoId) updateCardBorders(card, videoId);
-    });
+  observer.observe(target, {
+    childList: true,
+    subtree: true,
+  });
 }
+
+let routeChangeTimeout;
+let lastUrl = location.href;
+
+function detectRouteChange() {
+  if (location.href !== lastUrl) {
+    lastUrl = location.href;
+    clearTimeout(routeChangeTimeout);
+    routeChangeTimeout = setTimeout(() => {
+      clearInjectedVideoUI();
+      safeUpdateUI();
+    }, 300);
+  }
+}
+
+new MutationObserver(detectRouteChange).observe(document, {
+  childList: true,
+  subtree: true,
+});
 
 chrome.runtime.onMessage.addListener((msg) => {
   if (msg?.type === 'TOGGLE_SIDEBAR') toggleSidebar();
 });
 
-// Sync on storage change from sidebar or background
 if (typeof chrome !== 'undefined' && chrome.storage?.onChanged) {
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area === 'local') {
-      syncStorageAndUI();
+      getMarkedVideos();
     }
   });
 }
 
-syncStorageAndUI();
-setInterval(refreshPageUI, 1500);
-setInterval(injectFeedHoverButtons, 1500);
+// ////////////////////////////////////////////////////////////////////////////
+// SECTION 11: INITIALIZATION
+// ////////////////////////////////////////////////////////////////////////////
+
+getMarkedVideos();
+startObserver();
+safeUpdateUI();
