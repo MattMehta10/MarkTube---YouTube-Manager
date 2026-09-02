@@ -13,7 +13,7 @@ Status is kept honest here — "planned" doesn't mean "in progress." Update this
 ## Phase 2 — Personal Video Library
 - [x] Sidebar dashboard (Overview: streak, stats, "want to watch next" / "revisiting important" rails)
 - [x] Library view with filter tabs (ToWatch / Important / Watched / All) + search + pagination
-- [x] Export data (JSON backup)
+- [x] Export & Import data (JSON backup/restore with live storage sync & content script handshake)
 - [ ] Collections / custom tags beyond the three built-in states
 - [ ] Settings that actually persist (theme, sidebar width — currently UI-only, not wired to storage)
 
@@ -25,9 +25,6 @@ Status is kept honest here — "planned" doesn't mean "in progress." Update this
 ## Phase 4 — Learning Intelligence (not started)
 - [ ] Learning streaks tied to real activity (currently static/demo data)
 - [ ] Knowledge timeline, skill graph
-
-## Phase 5 — Cross-platform (not started)
-- [ ] Udemy / Coursera / articles integration
 
 ## Explicitly deprioritized until real usage data exists
 Payments, account deletion flows, and multi-device sync are stubbed in the UI (`Login.jsx`, `Settings.jsx`) but intentionally not wired up — see PRD non-goals. Don't build the backend for these until Phase 1–2 usage shows people actually want them.
