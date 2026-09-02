@@ -1,12 +1,12 @@
 import { getSelectorForCurrentPage } from './selectors.js';
 
-const OWNED_ATTR = 'data-mt-owned';
+export const OWNED_ATTR = 'data-mt-owned';
 
-const BORDER_COLORS = {
-  watched: 'rgba(34, 197, 94, 0.6)',   // green
-  important: 'rgba(239, 68, 68, 0.6)', // red
-  toWatch: 'rgba(234, 179, 8, 0.6)',   // yellow
-};
+export function markAsOwned(el, state = null) {
+  if (!el) return;
+  el.setAttribute(OWNED_ATTR, '1');
+  if (state) el.dataset.mtState = state;
+}
 
 /**
  * Removes every element MarkTube previously touched, so a re-render
@@ -15,38 +15,85 @@ const BORDER_COLORS = {
 export function clearInjectedVideoUI() {
   document.querySelectorAll(`[${OWNED_ATTR}]`).forEach((el) => {
     el.style.border = '';
+    el.style.borderRadius = '';
     el.removeAttribute(OWNED_ATTR);
+    el.removeAttribute('data-mt-state');
   });
+
+  document
+    .querySelectorAll('.myMTButton, .myMTButtonContainer, #btnstrip, .btnstrip')
+    .forEach((el) => el.remove());
+}
+
+/**
+ * Applies colored borders to indicate video status (green=watched, red=important, goldenrod=toWatch)
+ */
+export function updateWatchedStatus(el, videoId, watchedList, importantList, toWatchList) {
+  const isWatched = watchedList.includes(videoId);
+  const isImp = importantList.includes(videoId);
+  const isToWatch = toWatchList.includes(videoId);
+  const isPlaying = el.closest('ytd-watch-metadata') !== null;
+
+  const container =
+    el.closest('.yt-lockup-view-model-wiz.yt-lockup-view-model-wiz--horizontal') ||
+    el.closest('.yt-lockup-view-model--compact') ||
+    el.closest('ytd-rich-item-renderer') ||
+    el.closest('ytd-video-renderer') ||
+    el.closest('ytd-grid-video-renderer') ||
+    el.closest('ytd-playlist-video-renderer') ||
+    el.closest('ytd-compact-video-renderer') ||
+    el.closest('ytd-playlist-panel-video-renderer') ||
+    el.closest('ytd-watch-next-secondary-results-renderer') ||
+    el.parentElement;
+
+  if (!container) return;
+
+  if (container.getAttribute(OWNED_ATTR) === '1') {
+    container.style.border = '';
+    container.style.borderRadius = '';
+    container.removeAttribute('data-mt-state');
+  }
+
+  if (!isPlaying) {
+    let applied = false;
+
+    if (isToWatch) {
+      container.style.border = '2px solid goldenrod';
+      markAsOwned(container, 'toWatch');
+      applied = true;
+    } else if (isImp) {
+      container.style.border = '2px solid red';
+      markAsOwned(container, 'important');
+      applied = true;
+    } else if (isWatched) {
+      container.style.border = '2px solid green';
+      markAsOwned(container, 'watched');
+      applied = true;
+    }
+
+    if (applied) {
+      container.style.borderRadius = '10px';
+    }
+  } else {
+    container.style.border = 'none';
+    markAsOwned(container, 'playing');
+  }
 }
 
 /**
  * Applies border state to every video card on the current page type.
- * getVideoState(videoId) should return 'watched' | 'important' | 'toWatch' | null.
  */
-export function updateBorders(getVideoState, extractVideoId) {
+export function updateBorders(watchedList, importantList, toWatchList, extractVideoId) {
   const selector = getSelectorForCurrentPage();
-
-  if (!selector) {
-    // Unmapped page type. Don't guess a fallback — log so it's fixable.
-    console.debug('[MarkTube] no selector mapped for', location.pathname);
-    return;
-  }
+  if (!selector) return;
 
   const cards = document.querySelectorAll(selector);
 
-  if (cards.length === 0) {
-    // Selector matched nothing on a page where videos are expected.
-    // This is the health-check signal — a broken/changed selector, not silence.
-    console.warn('[MarkTube] selector matched 0 elements:', selector, 'on', location.pathname);
-    return;
-  }
-
   cards.forEach((card) => {
-    const videoId = extractVideoId(card);
-    if (!videoId) return;
-
-    const state = getVideoState(videoId);
-    card.style.border = state ? `2px solid ${BORDER_COLORS[state]}` : '';
-    card.setAttribute(OWNED_ATTR, 'true');
+    const thumb = card.querySelector('a#thumbnail, a[href*="/watch"]');
+    const videoId = extractVideoId(thumb?.href);
+    if (videoId) {
+      updateWatchedStatus(card, videoId, watchedList, importantList, toWatchList);
+    }
   });
 }

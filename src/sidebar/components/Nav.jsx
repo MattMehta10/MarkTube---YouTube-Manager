@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { IoIosSearch } from 'react-icons/io';
 import { MdOutlineCollectionsBookmark } from 'react-icons/md';
 import { FaRegBell } from 'react-icons/fa';
-import { IoMdCloudDone } from 'react-icons/io';
+import { FiDatabase } from 'react-icons/fi';
 import { GoArrowLeft } from 'react-icons/go';
 import { MTContext } from '../Wrapper';
 import Search from './Search';
@@ -54,8 +54,8 @@ const Nav = () => {
 
       {/* Right Icons */}
       <div className="flex gap-3 items-center">
-        <div title="Backup Status (Synced)" className="w-6 h-6 p-[2px] rounded-full flex items-center justify-center text-3xl hover:bg-gray-800">
-          <IoMdCloudDone />
+        <div title="Local DB Storage (Active)" className="w-6 h-6 p-[2px] rounded-full flex items-center justify-center text-xl hover:bg-gray-800 text-emerald-400">
+          <FiDatabase />
         </div>
         <div
           title="Notification"

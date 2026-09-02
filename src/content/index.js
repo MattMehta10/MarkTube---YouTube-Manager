@@ -42,7 +42,7 @@ function showToast(msg) {
   el.textContent = msg;
   el.className = 'my-toast';
   document.body.appendChild(el);
-  setTimeout(() => el.remove(), 2500);
+  setTimeout(() => el.remove(), 4500);
 }
 
 function clearInjectedVideoUI() {
@@ -532,6 +532,26 @@ new MutationObserver(detectRouteChange).observe(document, {
 
 chrome.runtime.onMessage.addListener((msg) => {
   if (msg?.type === 'TOGGLE_SIDEBAR') toggleSidebar();
+});
+
+window.addEventListener('message',(event) => {
+  if(event.data && event.data.type === "MT_SYNC_STORAGE_DATA"){
+    const {mtWatched,mtImportant,mtToWatch} = event.data.payload || {};
+    
+    //writing to chrome.storage.local
+    if(typeof chrome != 'undefined' && chrome.storage?.local) {
+      chrome.storage.local.set({mtWatched,mtImportant,mtToWatch});
+    }
+  
+  watchedVideos = mtWatched || [];
+  impVideos = mtImportant || [];
+  toWatchVideos = mtToWatch || [];
+
+  // update ui for all videos on page
+  clearInjectedVideoUI();
+  safeUpdateUI();
+  showToast("✅ Library restored & borders updated!")
+  }
 });
 
 if (typeof chrome !== 'undefined' && chrome.storage?.onChanged) {
