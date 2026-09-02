@@ -1,4 +1,5 @@
 import React, { useContext, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './stats.css';
 import animationdata from '../../assets/Streak Fire.json';
 import { toast } from 'react-toastify';
@@ -11,6 +12,7 @@ import gridImgAsset from '../../../public/grid.png';
 const LottieComponent = typeof Lottie === 'function' ? Lottie : (Lottie?.default || Lottie);
 
 const Stats = () => {
+  const navigate = useNavigate();
   const context = useContext(MTContext) || {};
   const { watchCount = 0, impCount = 0, pendingCount = 0, fetchStats } = context;
 
@@ -78,15 +80,24 @@ const Stats = () => {
       </div>
 
       <div className="vidsec bg-transparent px-1 cursor-pointer bg-radial from-gray-700/40 from-0% to-gray-950/90 text-white flex justify-between items-center gap-2 rounded-2xl w-55 h-20">
-        <div className="font-[gilroy] relative border-l border-b border-gray-50/12 bg-gray-50/5 hover:bg-green-600/25 transition ease-in-out duration-500 flex active:scale-95 justify-center font-extrabold rounded-xl text-2xl w-17 h-20">
+        <div
+          onClick={() => navigate('/library?filter=watched')}
+          className="font-[gilroy] relative border-l border-b border-gray-50/12 bg-gray-50/5 hover:bg-green-600/25 transition ease-in-out duration-500 flex active:scale-95 justify-center font-extrabold rounded-xl text-2xl w-17 h-20 cursor-pointer"
+        >
           <h1 className="pt-3">{watchCount}</h1>
           <p className="absolute bottom-2 text-[12px]">Watched</p>
         </div>
-        <div className="font-[gilroy] relative cursor-pointer border-l border-b border-gray-50/12 bg-gray-50/5 hover:bg-red-600/25 transition ease-in-out duration-500 active:scale-95 flex justify-center font-extrabold rounded-xl text-2xl w-17 h-20">
+        <div
+          onClick={() => navigate('/library?filter=important')}
+          className="font-[gilroy] relative cursor-pointer border-l border-b border-gray-50/12 bg-gray-50/5 hover:bg-red-600/25 transition ease-in-out duration-500 active:scale-95 flex justify-center font-extrabold rounded-xl text-2xl w-17 h-20"
+        >
           <h1 className="pt-3">{impCount}</h1>
           <p className="absolute bottom-2 text-[12px]">Important</p>
         </div>
-        <div className="font-[gilroy] relative cursor-pointer border-l border-b border-gray-50/12 bg-gray-50/5 hover:bg-yellow-400/25 flex transition ease-in-out duration-500 active:scale-95 justify-center font-extrabold rounded-xl text-2xl w-17 h-20">
+        <div
+          onClick={() => navigate('/library?filter=toWatch')}
+          className="font-[gilroy] relative cursor-pointer border-l border-b border-gray-50/12 bg-gray-50/5 hover:bg-yellow-400/25 flex transition ease-in-out duration-500 active:scale-95 justify-center font-extrabold rounded-xl text-2xl w-17 h-20"
+        >
           <h1 className="pt-3">{pendingCount}</h1>
           <p className="absolute bottom-2 text-[12px]">Pending</p>
         </div>

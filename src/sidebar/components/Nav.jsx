@@ -54,9 +54,18 @@ const Nav = () => {
 
       {/* Right Icons */}
       <div className="flex gap-3 items-center">
-        <div title="Local DB Storage (Active)" className="w-6 h-6 p-[2px] rounded-full flex items-center justify-center text-xl hover:bg-gray-800 text-emerald-400">
-          <FiDatabase />
-        </div>
+        <Link to="/setting">
+          <div
+            title="Local DB Storage"
+            className={`w-6 h-6 p-[2px] rounded-full flex items-center justify-center text-xl transition-colors cursor-pointer ${
+              isSetting
+                ? 'text-emerald-400 bg-gray-800'
+                : 'text-gray-300 hover:text-emerald-400 hover:bg-gray-800'
+            }`}
+          >
+            <FiDatabase />
+          </div>
+        </Link>
         <div
           title="Notification"
           className="w-6 h-6 p-[2px] rounded-full flex items-center justify-center text-xl hover:bg-gray-800 cursor-pointer"

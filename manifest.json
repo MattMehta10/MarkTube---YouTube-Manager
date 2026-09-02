@@ -5,11 +5,23 @@
   "description": "Mark and retrieve YouTube videos as Watched, Important, or Want to Watch — right where you browse.",
   "permissions": ["scripting", "activeTab", "storage"],
   "host_permissions": ["*://*.youtube.com/*"],
+  "icons": {
+    "16": "icon16.png",
+    "32": "icon32.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
   "background": {
     "service_worker": "assets/background.js"
   },
   "action": {
-    "default_title": "Toggle MarkTube Sidebar"
+    "default_title": "Toggle MarkTube Sidebar",
+    "default_icon": {
+      "16": "icon16.png",
+      "32": "icon32.png",
+      "48": "icon48.png",
+      "128": "icon128.png"
+    }
   },
   "content_scripts": [
     {
@@ -23,7 +35,8 @@
       "resources": [
         "assets/sidebar.js",
         "assets/sidebar.css",
-        "public/*"
+        "public/*",
+        "icon*.png"
       ],
       "matches": ["*://*.youtube.com/*"]
     }

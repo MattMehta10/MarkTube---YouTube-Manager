@@ -47,43 +47,50 @@ const Notification = () => {
   return (
     <>
       {Notifshow && (
-        <div onClick={() => setNotifshow && setNotifshow(false)}>
+        <>
+          {/* Subtle light backdrop overlay */}
           <div
-            className="myScrollArea w-3/4 bg-[#111827] top-12 left-18 text-white rounded-lg shadow-2xl border fixed z-[555] border-zinc-700 overflow-y-auto max-h-[60vh]"
+            className="fixed inset-0 bg-black/25 z-[554]"
+            onClick={() => setNotifshow && setNotifshow(false)}
+          />
+
+          {/* Dropdown panel anchored near top-right notification icon */}
+          <div
+            className="myScrollArea fixed top-14 right-3 z-[555] w-80 max-w-[calc(100vw-24px)] bg-[#111827] text-white rounded-xl shadow-2xl border border-zinc-700/80 overflow-y-auto max-h-[70vh]"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Close Button */}
             <button
-              className="absolute top-4 right-1.5 text-zinc-400 hover:text-red-400 cursor-pointer"
+              className="absolute top-3 right-3 text-zinc-400 hover:text-red-400 cursor-pointer"
               onClick={() => setNotifshow && setNotifshow(false)}
             >
-              <IoClose size={24} />
+              <IoClose size={18} />
             </button>
 
-            <div className="p-4 pb-3 text-lg font-semibold border-b border-zinc-700">
+            <div className="p-3 px-4 text-sm font-semibold border-b border-zinc-700/80">
               Notifications
             </div>
 
-            <div className="p-5 space-y-6">
+            <div className="p-3 space-y-3">
               {dummyNotifications.map((note) => (
                 <div
                   key={note.id}
-                  className={`rounded-xl p-2 ${
+                  className={`rounded-xl p-3 ${
                     note.type === 'important'
-                      ? 'bg-emerald-950 border border-emerald-700'
-                      : 'bg-zinc-800'
+                      ? 'bg-emerald-950/80 border border-emerald-700/60'
+                      : 'bg-zinc-800/80 border border-zinc-700/50'
                   }`}
                 >
-                  <div className="flex p-2 justify-between">
-                    <h3 className="text-[25px] w-55 font-bold">{note.title}</h3>
-                    <span className="text-[14px] w-20 mt-3 text-right text-zinc-400">{note.date}</span>
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="text-xs font-bold text-white leading-snug">{note.title}</h3>
+                    <span className="text-[10px] text-zinc-400 shrink-0">{note.date}</span>
                   </div>
 
-                  <div className="p-3">
-                    <p className="text-sm text-zinc-300 leading-relaxed">{note.detail}</p>
+                  <div className="mt-1.5">
+                    <p className="text-[11px] text-zinc-300 leading-relaxed">{note.detail}</p>
 
                     {note.features && (
-                      <ul className="list-disc list-inside mt-3 text-sm text-zinc-400 space-y-1">
+                      <ul className="list-disc list-inside mt-1.5 text-[11px] text-zinc-400 space-y-1">
                         {note.features.map((f, i) => (
                           <li key={i}>
                             <strong className="text-white">{f.label}</strong> - {f.desc}
@@ -93,8 +100,8 @@ const Notification = () => {
                     )}
                   </div>
                   {note.action && (
-                    <div className="mt-3">
-                      <button className="text-emerald-400 hover:underline text-sm font-medium cursor-pointer">
+                    <div className="mt-2">
+                      <button className="text-emerald-400 hover:underline text-[11px] font-medium cursor-pointer">
                         {note.action}
                       </button>
                     </div>
@@ -103,7 +110,7 @@ const Notification = () => {
               ))}
             </div>
           </div>
-        </div>
+        </>
       )}
     </>
   );

@@ -7,14 +7,19 @@ import { toast } from 'react-toastify';
 import { useSearchParams } from 'react-router-dom';
 
 const Library = () => {
+  const [searchParams] = useSearchParams();
+  const filterParam = searchParams.get('filter') || '';
   const [allVideos, setAllVideos] = useState([]);
   const [filteredVideos, setFilteredVideos] = useState([]);
   const [sortOrder, setSortOrder] = useState('asc');
-  const [vidType, setVidType] = useState('');
+  const [vidType, setVidType] = useState(filterParam);
   const [currentPage, setCurrentPage] = useState(1);
-  const [searchParams] = useSearchParams();
   const searchQuery = searchParams.get('search')?.toLowerCase() || '';
   const itemsPerPage = 5;
+
+  useEffect(() => {
+    setVidType(searchParams.get('filter') || '');
+  }, [searchParams]);
 
   const fetchVideos = async () => {
     try {

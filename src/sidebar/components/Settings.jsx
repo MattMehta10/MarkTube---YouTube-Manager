@@ -34,9 +34,9 @@ const Settings = () => {
   };
 
   return (
-    <div className="p-4 w-full flex flex-col gap-3 items-center myScrollArea overflow-y-auto">
+    <div className="p-4 w-full h-full flex flex-col gap-3 myScrollArea overflow-y-auto">
       {/* Profile Section - Untouched as requested */}
-      <div id="profile" className="bg-emerald-700/50 w-full h-25 flex items-center justify-between px-8 rounded-2xl">
+      <div id="profile" className="bg-emerald-700/50 w-full h-25 shrink-0 flex items-center justify-between px-8 rounded-2xl">
         <div className="flex gap-4 items-center">
           <img
             className="bg-white rounded-full h-18 w-18 object-cover"
@@ -56,15 +56,21 @@ const Settings = () => {
       </div>
 
       {/* Accordion Controls Container */}
-      <div className="w-full flex flex-col gap-3">
+      <div className="w-full flex flex-col gap-3 shrink-0 pb-4">
         {/* Data Control Accordion */}
-        <div className="w-full bg-gray-900/60 border border-gray-800/80 rounded-2xl overflow-hidden transition-all duration-300">
+        <div className="w-full shrink-0 bg-gray-900/60 border border-gray-800/80 rounded-2xl overflow-hidden transition-all duration-300">
           <div
             onClick={() => handleToggle('DC')}
-            className="flex h-14 w-full px-5 items-center justify-between hover:bg-gray-800/40 cursor-pointer select-none transition-colors"
+            className="group flex h-14 shrink-0 w-full px-5 items-center justify-between hover:bg-gray-800/40 cursor-pointer select-none transition-colors"
           >
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-xl bg-emerald-950/60 text-emerald-400">
+              <div
+                className={`w-9 h-9 shrink-0 rounded-xl flex items-center justify-center transition-colors ${
+                  openSection === 'DC'
+                    ? 'bg-emerald-950/60 text-emerald-400'
+                    : 'bg-gray-800/60 text-gray-400 group-hover:bg-emerald-950/60 group-hover:text-emerald-400'
+                }`}
+              >
                 <MdOutlineSdStorage className="text-xl" />
               </div>
               <h1 className="font-semibold text-sm tracking-wide text-gray-200">Data Control</h1>
@@ -78,9 +84,9 @@ const Settings = () => {
 
           {openSection === 'DC' && (
             <div className="p-4 pt-2 border-t border-gray-800/50 flex flex-col gap-2 bg-gray-950/40">
-              <div className="flex h-12 px-3 justify-between items-center hover:bg-gray-800/30 rounded-xl transition-colors">
+              <div className="group/sub flex h-12 px-3 justify-between items-center hover:bg-gray-800/30 rounded-xl transition-colors">
                 <div className="flex items-center gap-2">
-                  <FiDownload className="text-emerald-400 text-sm" />
+                  <FiDownload className="text-gray-400 group-hover/sub:text-emerald-400 transition-colors text-sm" />
                   <span className="text-xs font-medium text-gray-300">Download Data Backup</span>
                 </div>
                 <button
@@ -91,9 +97,9 @@ const Settings = () => {
                 </button>
               </div>
 
-              <div className="flex h-12 px-3 justify-between items-center hover:bg-gray-800/30 rounded-xl transition-colors">
+              <div className="group/sub flex h-12 px-3 justify-between items-center hover:bg-gray-800/30 rounded-xl transition-colors">
                 <div className="flex items-center gap-2">
-                  <FiUpload className="text-emerald-400 text-sm" />
+                  <FiUpload className="text-gray-400 group-hover/sub:text-emerald-400 transition-colors text-sm" />
                   <span className="text-xs font-medium text-gray-300">Import Data Backup</span>
                 </div>
                 <button
@@ -128,13 +134,19 @@ const Settings = () => {
         </div>
 
         {/* Look Control Accordion */}
-        <div className="w-full bg-gray-900/60 border border-gray-800/80 rounded-2xl overflow-hidden transition-all duration-300">
+        <div className="w-full shrink-0 bg-gray-900/60 border border-gray-800/80 rounded-2xl overflow-hidden transition-all duration-300">
           <div
             onClick={() => handleToggle('Look')}
-            className="flex h-14 w-full px-5 items-center justify-between hover:bg-gray-800/40 cursor-pointer select-none transition-colors"
+            className="group flex h-14 shrink-0 w-full px-5 items-center justify-between hover:bg-gray-800/40 cursor-pointer select-none transition-colors"
           >
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-xl bg-emerald-950/60 text-emerald-400">
+              <div
+                className={`w-9 h-9 shrink-0 rounded-xl flex items-center justify-center transition-colors ${
+                  openSection === 'Look'
+                    ? 'bg-emerald-950/60 text-emerald-400'
+                    : 'bg-gray-800/60 text-gray-400 group-hover:bg-emerald-950/60 group-hover:text-emerald-400'
+                }`}
+              >
                 <MdPalette className="text-xl" />
               </div>
               <h1 className="font-semibold text-sm tracking-wide text-gray-200">Look Control</h1>
@@ -171,13 +183,19 @@ const Settings = () => {
         </div>
 
         {/* Theme Control Accordion */}
-        <div className="w-full bg-gray-900/60 border border-gray-800/80 rounded-2xl overflow-hidden transition-all duration-300">
+        <div className="w-full shrink-0 bg-gray-900/60 border border-gray-800/80 rounded-2xl overflow-hidden transition-all duration-300">
           <div
             onClick={() => handleToggle('Theme')}
-            className="flex h-14 w-full px-5 items-center justify-between hover:bg-gray-800/40 cursor-pointer select-none transition-colors"
+            className="group flex h-14 shrink-0 w-full px-5 items-center justify-between hover:bg-gray-800/40 cursor-pointer select-none transition-colors"
           >
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-xl bg-emerald-950/60 text-emerald-400">
+              <div
+                className={`w-9 h-9 shrink-0 rounded-xl flex items-center justify-center transition-colors ${
+                  openSection === 'Theme'
+                    ? 'bg-emerald-950/60 text-emerald-400'
+                    : 'bg-gray-800/60 text-gray-400 group-hover:bg-emerald-950/60 group-hover:text-emerald-400'
+                }`}
+              >
                 <MdOutlineColorLens className="text-xl" />
               </div>
               <h1 className="font-semibold text-sm tracking-wide text-gray-200">Theme Control</h1>
@@ -207,13 +225,19 @@ const Settings = () => {
         </div>
 
         {/* Notification Control Accordion */}
-        <div className="w-full bg-gray-900/60 border border-gray-800/80 rounded-2xl overflow-hidden transition-all duration-300">
+        <div className="w-full shrink-0 bg-gray-900/60 border border-gray-800/80 rounded-2xl overflow-hidden transition-all duration-300">
           <div
             onClick={() => handleToggle('Notif')}
-            className="flex h-14 w-full px-5 items-center justify-between hover:bg-gray-800/40 cursor-pointer select-none transition-colors"
+            className="group flex h-14 shrink-0 w-full px-5 items-center justify-between hover:bg-gray-800/40 cursor-pointer select-none transition-colors"
           >
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-xl bg-emerald-950/60 text-emerald-400">
+              <div
+                className={`w-9 h-9 shrink-0 rounded-xl flex items-center justify-center transition-colors ${
+                  openSection === 'Notif'
+                    ? 'bg-emerald-950/60 text-emerald-400'
+                    : 'bg-gray-800/60 text-gray-400 group-hover:bg-emerald-950/60 group-hover:text-emerald-400'
+                }`}
+              >
                 <MdOutlineNotifications className="text-xl" />
               </div>
               <h1 className="font-semibold text-sm tracking-wide text-gray-200">Notification Control</h1>
