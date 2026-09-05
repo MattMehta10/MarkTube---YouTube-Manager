@@ -57,6 +57,19 @@
     pointer-events: auto;
 }
 
+/* — Compact / Carousel Modifier — */
+.ytLockupViewModelCompact #btnstrip,
+yt-lockup-view-model[sizing="COMPACT"] #btnstrip {
+    padding: 3px 6px;
+    bottom: 4px;
+    right: 8px;
+}
+.ytLockupViewModelCompact .btns,
+yt-lockup-view-model[sizing="COMPACT"] .btns {
+    width: 12px;
+    height: 12px;
+}
+
 /* ——— Individual Circle Buttons ——— */
 .btns {
     height: 2vh;

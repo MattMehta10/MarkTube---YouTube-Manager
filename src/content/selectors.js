@@ -3,13 +3,14 @@
 
 export const BORDER_SELECTORS = {
   home: 'ytd-rich-item-renderer #content',
-  watchSidebar: '.yt-lockup-view-model--horizontal, ytd-compact-video-renderer',
+  watchSidebar: 'yt-lockup-view-model, .yt-lockup-view-model--horizontal, ytd-compact-video-renderer',
   watchPlaylistQueue: 'ytd-playlist-panel-video-renderer > #wc-endpoint',
-  playlist: 'ytd-playlist-video-renderer > #content',
-  history: '.yt-lockup-view-model--horizontal',
-  channelHome: 'ytd-grid-video-renderer', // ⚠️ NOT ytd-shelf-renderer
+  playlist: 'yt-lockup-view-model, ytd-playlist-video-renderer',
+  history: 'yt-lockup-view-model',
+  channelHome: 'yt-lockup-view-model, ytd-grid-video-renderer',
   channelVideos: 'ytd-rich-item-renderer #content',
-  search: 'ytd-video-renderer',
+  channelStreams: 'ytd-rich-item-renderer #content',
+  search: 'ytd-video-renderer, ytd-grid-video-renderer, yt-lockup-view-model',
   newLayoutHorizontal: '.yt-lockup-view-model-wiz.yt-lockup-view-model-wiz--horizontal',
   newLayoutCompact: '.yt-lockup-view-model--compact',
 };
@@ -20,6 +21,7 @@ export const VIDEO_ANCHOR_SELECTOR = 'a#thumbnail, a[href*="/watch"]';
 // Selectors for card elements in feeds for hover buttons
 export const FEED_CARD_SELECTORS = [
   'ytd-rich-item-renderer',
+  'yt-lockup-view-model',
   '.yt-lockup-view-model--compact',
   'ytd-compact-video-renderer',
   'ytd-video-renderer',
@@ -35,7 +37,13 @@ export const FEED_CARD_SELECTORS = [
 export function getSelectorForCurrentPage() {
   const path = location.pathname;
 
-  if (path === '/' || path === '/feed/trending' || path === '/feed/subscriptions') {
+  if (path === '/feed/playlists') {
+    return null; // Exclude video card borders on playlist collection feed
+  }
+  if (path === '/feed/history') {
+    return BORDER_SELECTORS.history;
+  }
+  if (path === '/' || path.startsWith('/feed/')) {
     return BORDER_SELECTORS.home;
   }
   if (path === '/watch') {
@@ -44,13 +52,10 @@ export function getSelectorForCurrentPage() {
   if (path.startsWith('/playlist')) {
     return BORDER_SELECTORS.playlist;
   }
-  if (path === '/feed/history') {
-    return BORDER_SELECTORS.history;
-  }
-  if (path.startsWith('/@') && path.endsWith('/videos')) {
-    return BORDER_SELECTORS.channelVideos;
-  }
   if (path.startsWith('/@')) {
+    if (path.endsWith('/videos') || path.endsWith('/streams')) {
+      return BORDER_SELECTORS.channelVideos;
+    }
     return BORDER_SELECTORS.channelHome;
   }
   if (path === '/results') {
@@ -59,10 +64,12 @@ export function getSelectorForCurrentPage() {
 
   // Fallback selector string matching all feed elements
   return `
-    div#dismissible,
     ytd-playlist-panel-video-renderer > #wc-endpoint,
-    ytd-playlist-video-renderer > #content,
+    ytd-playlist-video-renderer,
     ytd-rich-item-renderer #content,
+    ytd-video-renderer,
+    ytd-grid-video-renderer,
+    yt-lockup-view-model,
     .yt-lockup-view-model-wiz.yt-lockup-view-model-wiz--horizontal,
     .yt-lockup-view-model--compact
   `;

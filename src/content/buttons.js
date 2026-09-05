@@ -5,21 +5,35 @@ import { markAsOwned } from './borders.js';
  * ADDS HOVER BUTTONS ON FEED VIDEOS
  * Adds action buttons (Watched, Important, Want to Watch) when hovering over video cards
  */
-export function addFeedButtons(watchedList, importantList, toWatchList, extractVideoId, handlers) {
+export function addFeedButtons(getLists, extractVideoId, handlers) {
+  // Playlist feed exclusion: do not add video hover buttons on playlist cards feed
+  if (location.pathname === '/feed/playlists') return;
+
   const { toggleWatched, toggleImportant, toggleToWatch } = handlers;
 
-  let vidbox = [];
+  let rawNodes = [];
   FEED_CARD_SELECTORS.forEach((sel) => {
-    vidbox.push(...document.querySelectorAll(sel));
+    rawNodes.push(...document.querySelectorAll(sel));
   });
 
+  // 1. Remove duplicate nodes
+  let vidbox = Array.from(new Set(rawNodes));
+
+  // 2. Exclude child nodes if their parent host element is already in vidbox
+  //    (Prevents double button injection when ytd-rich-item-renderer wraps yt-lockup-view-model)
+  vidbox = vidbox.filter(
+    (el) => !vidbox.some((other) => other !== el && other.contains(el))
+  );
+
+  // 3. Exclude ad slots, playlist collection stacks, and shelf section wrappers
   vidbox = vidbox.filter(
     (el) =>
+      !el.querySelector('ytd-ad-slot-renderer, ytd-in-feed-ad-layout-renderer') &&
+      !el.querySelector('yt-collection-thumbnail-view-model, [class*="CollectionStack"]') &&
+      !el.tagName.toLowerCase().includes('shelf') &&
       !el.closest('ytd-reel-item-renderer') &&
-      !el.closest('ytd-rich-section-renderer') &&
       !el.closest('ytd-reel-shelf-renderer') &&
       !el.closest('ytd-ad-slot-renderer') &&
-      !el.closest('yt-collection-thumbnail-view-model') &&
       !el.classList.contains('ytd-rich-grid-slim-media')
   );
 
@@ -27,18 +41,21 @@ export function addFeedButtons(watchedList, importantList, toWatchList, extractV
     if (el.dataset.mtHovered) return;
 
     el.addEventListener('mouseenter', () => {
-      let btnstrip = el.querySelector('#btnstrip');
-      if (btnstrip) btnstrip.remove();
+      // Remove any existing orphaned btnstrip inside this container
+      el.querySelectorAll('#btnstrip, .btnstrip').forEach((b) => b.remove());
 
       const anchor = el.querySelector('a[href*="/watch"]');
       if (!anchor) return;
       if (anchor.href.includes('/playlist?')) return;
-      if (el.querySelector('yt-collection-thumbnail-view-model')) return;
+      if (el.querySelector('yt-collection-thumbnail-view-model, [class*="CollectionStack"]')) return;
 
       const videoId = extractVideoId(anchor.href);
       if (!videoId) return;
 
-      btnstrip = document.createElement('div');
+      // Always fetch fresh list arrays at the moment of hover!
+      const { watchedVideos = [], impVideos = [], toWatchVideos = [] } = getLists() || {};
+
+      const btnstrip = document.createElement('div');
       btnstrip.id = 'btnstrip';
       btnstrip.className = 'btnstrip visible';
       btnstrip.innerHTML = `
@@ -57,44 +74,40 @@ export function addFeedButtons(watchedList, importantList, toWatchList, extractV
       const [btnW, btnI, btnT] = btnstrip.querySelectorAll('.btns');
 
       if (btnW) {
-        if (watchedList.includes(videoId)) btnW.classList.add('active');
+        if (watchedVideos.includes(videoId)) btnW.classList.add('active');
         btnW.addEventListener('click', (e) => {
           e.stopPropagation();
           e.preventDefault();
           toggleWatched(el, videoId);
-          btnW.classList.toggle('active');
         });
       }
 
       if (btnI) {
-        if (importantList.includes(videoId)) btnI.classList.add('active');
+        if (impVideos.includes(videoId)) btnI.classList.add('active');
         btnI.addEventListener('click', (e) => {
           e.stopPropagation();
           e.preventDefault();
           toggleImportant(el, videoId);
-          btnI.classList.toggle('active');
         });
       }
 
       if (btnT) {
-        if (toWatchList.includes(videoId)) btnT.classList.add('active');
+        if (toWatchVideos.includes(videoId)) btnT.classList.add('active');
         btnT.addEventListener('click', (e) => {
           e.stopPropagation();
           e.preventDefault();
           toggleToWatch(el, videoId);
-          btnT.classList.toggle('active');
         });
       }
     });
 
     el.addEventListener('mouseleave', () => {
-      const btnstrip = el.querySelector('#btnstrip');
-      if (btnstrip) {
+      el.querySelectorAll('#btnstrip, .btnstrip').forEach((btnstrip) => {
         btnstrip.classList.remove('visible');
         setTimeout(() => {
           if (btnstrip && btnstrip.parentNode) btnstrip.remove();
-        }, 250);
-      }
+        }, 200);
+      });
     });
 
     el.dataset.mtHovered = '1';
