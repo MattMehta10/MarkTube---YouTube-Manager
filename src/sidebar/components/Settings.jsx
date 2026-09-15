@@ -3,7 +3,7 @@ import { IoIosArrowForward } from 'react-icons/io';
 import { MdOutlineSdStorage, MdPalette, MdOutlineNotifications, MdOutlineColorLens } from 'react-icons/md';
 import { FiDownload, FiUpload } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
-import { importLibrary, exportLibrary } from '../utils/exportImport';
+import { importLibrary, exportLibrary, clearLibraryData } from '../utils/exportImport';
 
 const Settings = () => {
   const [openSection, setOpenSection] = useState(null);
@@ -12,6 +12,24 @@ const Settings = () => {
 
   const handleToggle = (section) => {
     setOpenSection(openSection === section ? null : section);
+  };
+
+  const handleDeleteStorage = async () => {
+    const confirmDelete = window.confirm(
+      '⚠️ Are you sure you want to delete all MarkTube local storage? This will clear all marked videos from PouchDB and chrome.storage.local.'
+    );
+    if (!confirmDelete) return;
+
+    setImportStatus('Deleting local storage...');
+    try {
+      await clearLibraryData();
+      setImportStatus('🗑️ Storage deleted successfully!');
+      setTimeout(() => setImportStatus(''), 5000);
+    } catch (err) {
+      console.error('Failed to delete storage:', err);
+      setImportStatus('❌ Delete failed');
+      setTimeout(() => setImportStatus(''), 5000);
+    }
   };
 
   const handleFileChange = async (e) => {
@@ -125,7 +143,10 @@ const Settings = () => {
 
               <div className="flex h-12 px-3 justify-between items-center hover:bg-red-950/20 rounded-xl transition-colors">
                 <span className="text-xs font-medium text-gray-400">Delete Local Storage</span>
-                <button className="px-3 py-1.5 bg-red-950/80 hover:bg-red-900/80 text-red-400 border border-red-800/50 rounded-xl text-xs font-medium cursor-pointer active:scale-95 transition-all">
+                <button
+                  onClick={handleDeleteStorage}
+                  className="px-3 py-1.5 bg-red-950/80 hover:bg-red-900/80 text-red-400 border border-red-800/50 rounded-xl text-xs font-medium cursor-pointer active:scale-95 transition-all"
+                >
                   Delete
                 </button>
               </div>
